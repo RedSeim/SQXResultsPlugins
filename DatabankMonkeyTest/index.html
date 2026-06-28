@@ -662,7 +662,7 @@
           <!-- Percentile -->
           <div class="form-group">
             <label>{{ t('percentile') }}: {{ settings.percentile }}%</label>
-            <input type="range" class="form-control" min="90" max="99.9" step="0.5" v-model.number="settings.percentile" @change="onSettingsChange">
+            <input type="range" class="form-control" min="50" max="99.9" step="0.1" v-model.number="settings.percentile" @change="onSettingsChange">
           </div>
 
           <!-- Progress bar -->
