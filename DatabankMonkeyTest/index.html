@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,7 +20,7 @@
       --text-muted: #666666;
       --border-color: #E0E0E0;
       --input-border: #CCCCCC;
-      
+
       --primary: #337ab7;
       --primary-hover: #286090;
       --success: #28a745;
@@ -27,7 +28,7 @@
       --danger: #dc3545;
       --danger-bg: rgba(220, 53, 69, 0.1);
       --warning: #ffc107;
-      
+
       --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       --transition-speed: 0.25s;
     }
@@ -41,18 +42,20 @@
       --text-muted: #aaaaaa;
       --border-color: #444444;
       --input-border: #555555;
-      
+
       --primary: #337ab7;
       --primary-hover: #4090d0;
       --success: #28a745;
       --success-bg: rgba(40, 167, 69, 0.2);
       --danger: #dc3545;
       --danger-bg: rgba(220, 53, 69, 0.2);
-      
+
       --card-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
     }
 
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
@@ -289,7 +292,7 @@
       display: flex;
       align-items: center;
       gap: 15px;
-      box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
     }
 
     .kpi-chart-box {
@@ -396,9 +399,20 @@
       text-transform: uppercase;
     }
 
-    .badge-success { background: var(--success); color: white; }
-    .badge-danger { background: var(--danger); color: white; }
-    .badge-warning { background: var(--warning); color: #333; }
+    .badge-success {
+      background: var(--success);
+      color: white;
+    }
+
+    .badge-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .badge-warning {
+      background: var(--warning);
+      color: #333;
+    }
 
     /* Button styles */
     .btn {
@@ -503,16 +517,30 @@
     }
 
     /* Scrollbars */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #888; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #555; }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
 
     /* Button Danger */
     .btn-danger {
       color: white;
       background-color: var(--danger);
     }
+
     .btn-danger:hover {
       background-color: #c82333;
     }
@@ -553,16 +581,14 @@
       border-radius: 4px;
       transition: width 0.2s ease-out;
       background-size: 30px 30px;
-      background-image: linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.15) 25%,
-        transparent 25%,
-        transparent 50%,
-        rgba(255, 255, 255, 0.15) 50%,
-        rgba(255, 255, 255, 0.15) 75%,
-        transparent 75%,
-        transparent
-      );
+      background-image: linear-gradient(135deg,
+          rgba(255, 255, 255, 0.15) 25%,
+          transparent 25%,
+          transparent 50%,
+          rgba(255, 255, 255, 0.15) 50%,
+          rgba(255, 255, 255, 0.15) 75%,
+          transparent 75%,
+          transparent);
       animation: barStripes 1s linear infinite;
     }
 
@@ -575,11 +601,17 @@
     }
 
     @keyframes barStripes {
-      from { background-position: 0 0; }
-      to { background-position: 30px 0; }
+      from {
+        background-position: 0 0;
+      }
+
+      to {
+        background-position: 30px 0;
+      }
     }
   </style>
 </head>
+
 <body>
   <div id="app">
     <!-- Header -->
@@ -602,7 +634,8 @@
         <div class="sidebar-header">{{ t('parameters') }}</div>
         <div class="sidebar-content">
           <!-- Error banner -->
-          <div v-if="errorMessage" style="background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger); padding: 8px 10px; border-radius: 4px; font-size: 11px; line-height: 1.3; margin-bottom: 12px; word-break: break-all;">
+          <div v-if="errorMessage"
+            style="background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger); padding: 8px 10px; border-radius: 4px; font-size: 11px; line-height: 1.3; margin-bottom: 12px; word-break: break-all;">
             <strong>Error:</strong> {{ errorMessage }}
           </div>
           <!-- Price CSV upload -->
@@ -644,16 +677,19 @@
                 <span style="font-size: 11px;">{{ t('sqxDropText') }}</span>
               </div>
               <div v-else style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                <span style="font-size: 12px;">Loaded: {{ sqxFiles.size }} / {{ bulkStrategies.length }} .sqx files</span>
+                <span style="font-size: 12px;">Loaded: {{ sqxFiles.size }} / {{ bulkStrategies.length }} .sqx
+                  files</span>
                 <button @click="clearSqxFiles" class="btn btn-sm btn-danger">Clear</button>
               </div>
               <input type="file" accept=".sqx" multiple @change="loadSqxFiles">
             </div>
             <!-- Validation alerts -->
-            <div v-if="sqxValidationError" style="background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger); padding: 8px 10px; border-radius: 4px; font-size: 11px; line-height: 1.3; margin-top: 6px; word-break: break-all;">
+            <div v-if="sqxValidationError"
+              style="background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger); padding: 8px 10px; border-radius: 4px; font-size: 11px; line-height: 1.3; margin-top: 6px; word-break: break-all;">
               {{ sqxValidationError }}
             </div>
-            <div v-if="sqxFiles.size > 0 && !sqxValidationError" style="background: var(--success-bg); color: var(--success); border: 1px solid var(--success); padding: 8px 10px; border-radius: 4px; font-size: 11px; line-height: 1.3; margin-top: 6px;">
+            <div v-if="sqxFiles.size > 0 && !sqxValidationError"
+              style="background: var(--success-bg); color: var(--success); border: 1px solid var(--success); padding: 8px 10px; border-radius: 4px; font-size: 11px; line-height: 1.3; margin-top: 6px;">
               All .sqx files validated successfully.
             </div>
           </div>
@@ -680,13 +716,15 @@
           <!-- Simulated Monkeys -->
           <div class="form-group">
             <label>{{ t('numMonkeys') }}: {{ settings.numMonkeys }}</label>
-            <input type="range" class="form-control" min="100" max="1000" step="50" v-model.number="settings.numMonkeys" @change="onSettingsChange">
+            <input type="range" class="form-control" min="100" max="1000" step="50" v-model.number="settings.numMonkeys"
+              @change="onSettingsChange">
           </div>
 
           <!-- Percentile -->
           <div class="form-group">
             <label>{{ t('percentile') }}: {{ settings.percentile }}%</label>
-            <input type="range" class="form-control" min="50" max="99.9" step="0.1" v-model.number="settings.percentile" @change="onSettingsChange">
+            <input type="range" class="form-control" min="50" max="99.9" step="0.1" v-model.number="settings.percentile"
+              @change="onSettingsChange">
           </div>
 
           <!-- Progress bar -->
@@ -698,11 +736,14 @@
             <div class="progress-bar-track">
               <div class="progress-bar-fill" :style="{ width: progress + '%' }"></div>
             </div>
-            <span class="progress-subtext" v-if="currentProcessingName">{{ t('processing', { name: currentProcessingName }) }}</span>
+            <span class="progress-subtext" v-if="currentProcessingName">{{ t('processing', { name: currentProcessingName
+              }) }}</span>
           </div>
 
           <!-- Run / Cancel test btn -->
-          <button v-if="!isCalculating" class="btn btn-primary" :disabled="priceData.length === 0 || (activeStrategy === null && bulkStrategies.length === 0) || (bulkStrategies.length > 0 && sqxValidationError)" @click="runTestOnAll">
+          <button v-if="!isCalculating" class="btn btn-primary"
+            :disabled="priceData.length === 0 || (activeStrategy === null && bulkStrategies.length === 0) || (bulkStrategies.length > 0 && sqxValidationError)"
+            @click="runTestOnAll">
             {{ t('runTest') }}
           </button>
           <button v-else class="btn btn-danger" @click="cancelCalculation">
@@ -735,7 +776,8 @@
                   {{ t(activeResult.status.toLowerCase()) }}
                 </div>
               </div>
-              <button class="btn btn-secondary btn-sm" style="position: absolute; right: 10px; top: 10px;" @click="exportMonkeyData(activeResult)">
+              <button class="btn btn-secondary btn-sm" style="position: absolute; right: 10px; top: 10px;"
+                @click="exportMonkeyData(activeResult)">
                 {{ t('dataBtn') }}
               </button>
             </div>
@@ -805,9 +847,12 @@
           <div class="dashboard-grid">
             <!-- Results list -->
             <div class="results-table-box">
-              <div class="table-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+              <div class="table-header"
+                style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                 <span>{{ t('strategiesGrid') }}</span>
-                <button v-if="bulkResults.length > 0" class="btn btn-success btn-sm" :disabled="!hasPassedStrategies || sqxFiles.size === 0 || sqxValidationError" @click="downloadPassedZip">
+                <button v-if="bulkResults.length > 0" class="btn btn-success btn-sm"
+                  :disabled="!hasPassedStrategies || sqxFiles.size === 0 || sqxValidationError"
+                  @click="downloadPassedZip">
                   📦 {{ t('downloadPassedZip', { count: passedStrategiesCount }) }}
                 </button>
               </div>
@@ -835,7 +880,8 @@
                       <td>{{ res.rankPercentile.toFixed(1) }}%</td>
                       <td>{{ res.zScore.toFixed(2) }} &sigma;</td>
                       <td>
-                        <span class="badge" :class="res.status === 'PASSED' ? 'badge-success' : (res.status === 'LOW TRADES' ? 'badge-warning' : 'badge-danger')">
+                        <span class="badge"
+                          :class="res.status === 'PASSED' ? 'badge-success' : (res.status === 'LOW TRADES' ? 'badge-warning' : 'badge-danger')">
                           {{ t(res.status.toLowerCase().replace(' ', '')) }}
                         </span>
                       </td>
@@ -862,7 +908,8 @@
 
             <!-- Inspect detail side panel -->
             <div class="detail-panel" v-if="inspectedStrategy">
-              <h3 style="font-size: 15px; font-weight: bold; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
+              <h3
+                style="font-size: 15px; font-weight: bold; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
                 {{ inspectedStrategy.name }}
               </h3>
               <div class="chart-card">
@@ -878,7 +925,8 @@
                 </div>
               </div>
             </div>
-            <div v-else-if="bulkResults.length > 0" class="detail-panel" style="justify-content: center; align-items: center; border: 1px dashed var(--border-color); border-radius: 4px; background: var(--bg-panel);">
+            <div v-else-if="bulkResults.length > 0" class="detail-panel"
+              style="justify-content: center; align-items: center; border: 1px dashed var(--border-color); border-radius: 4px; background: var(--bg-panel);">
               <span style="color: var(--text-muted);">Select a strategy in the table to inspect details</span>
             </div>
           </div>
@@ -1051,7 +1099,7 @@
         // Prices & Trades cache
         const priceData = ref([]); // array of { time, open, high, low, close }
         const timeMap = ref(new Map());
-        
+
         // Active Strategy
         const activeStrategy = ref(null); // original trade data from SQX
         const activeResult = ref(null); // calculated monkey simulation outcome for active strategy
@@ -1128,7 +1176,7 @@
         function parseDate(str) {
           if (!str) return 0;
           let s = String(str).trim();
-          
+
           // Try timestamp first
           if (/^\d{10,13}$/.test(s)) {
             let t = parseInt(s);
@@ -1215,7 +1263,7 @@
           if (timeMap.value.has(time)) return timeMap.value.get(time);
           let candles = priceData.value;
           if (candles.length === 0) return -1;
-          
+
           let low = 0, high = candles.length - 1;
           let bestIdx = -1;
           while (low <= high) {
@@ -1232,6 +1280,51 @@
           return bestIdx;
         }
 
+        function detectFridayExit(trades) {
+          let hasFriday = false;
+          let exitHour = 21;
+          let exitMinute = 0;
+          for (let k = 0; k < trades.length; k++) {
+            let t = trades[k];
+            let isFriday = false;
+            if (t.CloseType !== undefined && t.CloseType !== null) {
+              if (typeof t.CloseType === 'number') {
+                if (t.CloseType === 14 || t.CloseType === 16 || t.CloseType === 55) {
+                  isFriday = true;
+                }
+              } else {
+                let ct = String(t.CloseType).toLowerCase();
+                if (ct.includes('friday') || ct.includes('viernes')) {
+                  isFriday = true;
+                }
+              }
+            }
+            if (isFriday && t.CloseTime > 0) {
+              hasFriday = true;
+              let d = new Date(t.CloseTime);
+              exitHour = d.getHours();
+              exitMinute = d.getMinutes();
+              break;
+            }
+          }
+          return { hasFriday, exitHour, exitMinute };
+        }
+
+        function isAfterFridayExit(time, exitHour, exitMinute) {
+          let d = new Date(time);
+          let day = d.getDay(); // 0 = Sunday, 1 = Monday, ..., 5 = Friday, 6 = Saturday
+          if (day === 5) { // Friday
+            let h = d.getHours();
+            let m = d.getMinutes();
+            if (h > exitHour || (h === exitHour && m >= exitMinute)) {
+              return true;
+            }
+          } else if (day === 6 || day === 0) { // Saturday or Sunday
+            return true;
+          }
+          return false;
+        }
+
         // ===================================================================
         // CSV Parsing functions
         // ===================================================================
@@ -1240,7 +1333,7 @@
           const file = e.target.files[0];
           if (!file) return;
           const reader = new FileReader();
-          reader.onload = function(evt) {
+          reader.onload = function (evt) {
             try {
               const text = evt.target.result;
               const lines = text.split(/\r?\n/);
@@ -1275,15 +1368,15 @@
 
               const parsed = [];
               const newTimeMap = new Map();
-              
+
               for (let i = headerIdx + 1; i < lines.length; i++) {
                 if (!lines[i].trim()) continue;
                 const cols = lines[i].split(separator).map(c => c.trim().replace(/^["']|["']$/g, ''));
                 if (cols.length <= Math.max(dateIdx, openIdx, highIdx, lowIdx, closeIdx)) continue;
-                
+
                 const tVal = parseDate(cols[dateIdx]);
                 if (tVal === 0) continue;
-                
+
                 const bar = {
                   time: tVal,
                   open: parseValFloat(cols[openIdx]),
@@ -1306,7 +1399,7 @@
 
               priceData.value = parsed;
               timeMap.value = newTimeMap;
-              
+
               // Run tests automatically if possible
               if (activeStrategy.value) runActiveStrategyTest();
             } catch (err) {
@@ -1344,7 +1437,7 @@
             const file = files[fileIdx];
             const reader = new FileReader();
 
-            reader.onload = function(evt) {
+            reader.onload = function (evt) {
               processedCount++;
               try {
                 const text = evt.target.result;
@@ -1387,6 +1480,7 @@
                 const maeIdx = cleanHeaders.findIndex(h => h === 'mae' || h.includes('mae'));
                 const mfeIdx = cleanHeaders.findIndex(h => h === 'mfe' || h.includes('mfe'));
                 const plPipsIdx = cleanHeaders.findIndex(h => h.includes('profitlosspips') || h.includes('plpips') || h === 'pips');
+                const closeTypeIdx = cleanHeaders.findIndex(h => h === 'closetype' || h === 'closereason');
 
                 if (openTimeIdx === -1) throw new Error(`File "${file.name}": Missing Open Time column.`);
                 if (openPriceIdx === -1) throw new Error(`File "${file.name}": Missing Open Price column.`);
@@ -1451,7 +1545,8 @@
                     CommSwap: commSwapIdx !== -1 ? parseValFloat(cols[commSwapIdx]) : 0.0,
                     MAE: maeIdx !== -1 ? parseValFloat(cols[maeIdx]) : 0.0,
                     MFE: mfeIdx !== -1 ? parseValFloat(cols[mfeIdx]) : 0.0,
-                    ProfitLossPips: plPipsIdx !== -1 ? parseValFloat(cols[plPipsIdx]) : 0.0
+                    ProfitLossPips: plPipsIdx !== -1 ? parseValFloat(cols[plPipsIdx]) : 0.0,
+                    CloseType: closeTypeIdx !== -1 ? cols[closeTypeIdx].trim() : ''
                   };
 
                   if (isNaN(trade.OpenPrice) || isNaN(trade.ClosePrice) || trade.OpenTime === 0) continue;
@@ -1539,7 +1634,6 @@
           const csvNamesNormalized = new Map(bulkStrategies.value.map(s => [normalize(s.name), s.name]));
 
           if (sqxFiles.value.size === 0) {
-            sqxValidationError.value = t('errSqxNoFiles');
             return;
           }
 
@@ -1646,7 +1740,7 @@
             return;
           }
 
-          zip.generateAsync({ type: "blob" }).then(function(content) {
+          zip.generateAsync({ type: "blob" }).then(function (content) {
             const link = document.createElement("a");
             link.href = URL.createObjectURL(content);
             link.download = "passed_strategies.zip";
@@ -1663,7 +1757,7 @@
         // ===================================================================
         const handleMessage = (e) => {
           const { type, data, theme: nextTheme, language } = e.data;
-          
+
           if (type === 'SET_THEME') {
             theme.value = nextTheme;
             document.documentElement.setAttribute('data-theme', nextTheme);
@@ -1733,10 +1827,11 @@
                 CommSwap: parseValFloat(o.CommSwap),
                 MAE: parseValFloat(o.MAE),
                 MFE: parseValFloat(o.MFE),
-                ProfitLossPips: parseValFloat(o.ProfitLossPips)
+                ProfitLossPips: parseValFloat(o.ProfitLossPips),
+                CloseType: o.CloseType !== undefined && o.CloseType !== null ? o.CloseType : 0
               };
             });
-            
+
             // Sort chronologically
             list.sort((a, b) => a.OpenTime - b.OpenTime);
             activeStrategy.value.trades = list;
@@ -1793,11 +1888,57 @@
               return bestIdx;
             }
 
+            function detectFridayExit(trades) {
+              let hasFriday = false;
+              let exitHour = 21;
+              let exitMinute = 0;
+              for (let k = 0; k < trades.length; k++) {
+                let t = trades[k];
+                let isFriday = false;
+                if (t.CloseType !== undefined && t.CloseType !== null) {
+                  if (typeof t.CloseType === 'number') {
+                    if (t.CloseType === 14 || t.CloseType === 16 || t.CloseType === 55) {
+                      isFriday = true;
+                    }
+                  } else {
+                    let ct = String(t.CloseType).toLowerCase();
+                    if (ct.includes('friday') || ct.includes('viernes')) {
+                      isFriday = true;
+                    }
+                  }
+                }
+                if (isFriday && t.CloseTime > 0) {
+                  hasFriday = true;
+                  let d = new Date(t.CloseTime);
+                  exitHour = d.getHours();
+                  exitMinute = d.getMinutes();
+                  break;
+                }
+              }
+              return { hasFriday, exitHour, exitMinute };
+            }
+
+            function isAfterFridayExit(time, exitHour, exitMinute) {
+              let d = new Date(time);
+              let day = d.getDay();
+              if (day === 5) {
+                let h = d.getHours();
+                let m = d.getMinutes();
+                if (h > exitHour || (h === exitHour && m >= exitMinute)) {
+                  return true;
+                }
+              } else if (day === 6 || day === 0) {
+                return true;
+              }
+              return false;
+            }
+
             function runMonkeySimulation(trades, candles, settings) {
               const numMonkeys = settings.numMonkeys;
               const percentile = settings.percentile;
               const tfMs = inferTimeframeMs(candles);
               const mmMode = settings.mmMode;
+              const { hasFriday, exitHour, exitMinute } = detectFridayExit(trades);
 
               let filterSampleType = null;
               if (settings.period === 'IS') filterSampleType = 10;
@@ -1881,9 +2022,17 @@
                   let exitPrice = null;
                   let maxBars = holdingBars(origTrade, tfMs);
 
-                  for (let b = 0; b < maxBars; b++) {
+                  let useBarLimit = !hasSL && !hasTP;
+                  let maxLoopBars = useBarLimit ? maxBars : (candles.length - t_prime);
+
+                  for (let b = 0; b < maxLoopBars; b++) {
                     let candleIdx = (t_prime + b) % candles.length;
                     let c = candles[candleIdx];
+
+                    if (hasFriday && isAfterFridayExit(c.time, exitHour, exitMinute)) {
+                      exitPrice = c.open;
+                      break;
+                    }
 
                     if (direction === 1) {
                       if (slPrice !== null && c.low <= slPrice) {
@@ -1907,7 +2056,7 @@
                   }
 
                   if (exitPrice === null) {
-                    let exitIdx = (t_prime + maxBars) % candles.length;
+                    let exitIdx = (t_prime + maxLoopBars - 1) % candles.length;
                     exitPrice = candles[exitIdx].close;
                   }
 
@@ -2180,12 +2329,12 @@
 
         const exportMonkeyData = (res) => {
           if (!res || !res.trades || priceData.value.length === 0) return;
-          
+
           const candles = priceData.value;
           const trades = res.trades;
           const numMonkeys = settings.numMonkeys;
           const tfMs = inferTimeframeMs(candles);
-          
+
           // 1. Setup sample filters
           let filterSampleType = null;
           if (settings.period === 'IS') filterSampleType = 10;
@@ -2197,6 +2346,8 @@
           }
 
           if (filteredTrades.length === 0) return;
+
+          const { hasFriday, exitHour, exitMinute } = detectFridayExit(trades);
 
           // 2. Setup period indices
           let tMin = Math.min(...filteredTrades.map(t => t.OpenTime));
@@ -2276,7 +2427,7 @@
             totalSecs %= 3600;
             let mins = Math.floor(totalSecs / 60);
             let secs = totalSecs % 60;
-            
+
             let parts = [];
             if (days > 0) parts.push(`${days}d`);
             if (hours > 0) parts.push(`${hours}h`);
@@ -2319,14 +2470,14 @@
           // 5. Simulate each monkey and format their trades
           for (let m = 0; m < numMonkeys; m++) {
             let shift = Math.floor(Math.random() * (M - 1)) + 1;
-            
+
             // Reconstruct running balance starting from original balance minus first trade's profit
             let runningBalance = filteredTrades[0].Balance - filteredTrades[0].ProfitLoss;
 
             for (let k = 0; k < alignedTrades.length; k++) {
               let at = alignedTrades[k];
               let origTrade = at.original;
-              
+
               let r_prime = (at.r_i - shift) % M;
               if (r_prime < 0) r_prime += M;
               let t_prime = idxMin + r_prime;
@@ -2335,7 +2486,7 @@
 
               let hasSL = origTrade.SLLevel !== null && origTrade.SLLevel > 0 && origTrade.SLLevel !== -99999999 && origTrade.SLLevel !== origTrade.OpenPrice;
               let hasTP = origTrade.PTLevel !== null && origTrade.PTLevel > 0 && origTrade.PTLevel !== -99999999 && origTrade.PTLevel !== origTrade.OpenPrice;
-              
+
               let sl_pct = hasSL ? Math.abs(origTrade.SLLevel - origTrade.OpenPrice) / origTrade.OpenPrice : 0.0;
               let tp_pct = hasTP ? Math.abs(origTrade.PTLevel - origTrade.OpenPrice) / origTrade.OpenPrice : 0.0;
               let direction = origTrade.Type === 2 ? -1 : 1;
@@ -2354,17 +2505,27 @@
               let closeTypeStr = 'Time exit';
               let maxBars = holdingBars(origTrade, tfMs);
 
+              let useBarLimit = !hasSL && !hasTP;
+              let maxLoopBars = useBarLimit ? maxBars : (candles.length - t_prime);
+
               // Track price excursion across the bars actually traversed, to compute
               // this monkey trade's own MAE/MFE (lowest low / highest high seen).
               let worstLow = entryPrice;
               let bestHigh = entryPrice;
 
-              for (let b = 0; b < maxBars; b++) {
+              for (let b = 0; b < maxLoopBars; b++) {
                 let candleIdx = (t_prime + b) % candles.length;
                 let c = candles[candleIdx];
 
                 if (c.low < worstLow) worstLow = c.low;
                 if (c.high > bestHigh) bestHigh = c.high;
+
+                if (hasFriday && isAfterFridayExit(c.time, exitHour, exitMinute)) {
+                  exitPrice = c.open;
+                  exitTime = c.time;
+                  closeTypeStr = 'Friday Exit';
+                  break;
+                }
 
                 if (direction === 1) { // Long
                   if (slPrice !== null && c.low <= slPrice) {
@@ -2396,7 +2557,7 @@
               }
 
               if (exitPrice === null) {
-                let exitIdx = (t_prime + maxBars) % candles.length;
+                let exitIdx = (t_prime + maxLoopBars - 1) % candles.length;
                 exitPrice = candles[exitIdx].close;
                 exitTime = candles[exitIdx].time;
                 if (candles[exitIdx].low < worstLow) worstLow = candles[exitIdx].low;
@@ -2464,7 +2625,7 @@
               // order, including the reference's duplicate Profit/Loss and Balance columns.
               let rowCols = [
                 fmtText(m + 1),                                   // Monkey ID (extra)
-                fmtText(`M${m+1}_${origTrade.Ticket}`),           // Ticket
+                fmtText(`M${m + 1}_${origTrade.Ticket}`),           // Ticket
                 fmtText(origTrade.Symbol),                        // Symbol
                 fmtText(origTrade.Type === 2 ? 'Sell' : 'Buy'),   // Type
                 fmtDate(candles[t_prime].time),                   // Open time
@@ -2593,7 +2754,7 @@
           const binW = chartW / numBins;
           ctx.fillStyle = isDark ? 'rgba(255, 165, 0, 0.3)' : 'rgba(255, 165, 0, 0.4)';
           ctx.strokeStyle = isDark ? 'rgba(255, 165, 0, 0.6)' : 'rgba(255, 165, 0, 0.8)';
-          
+
           for (let i = 0; i < numBins; i++) {
             let x = padL + i * binW;
             let h = (bins[i] / maxBinCount) * chartH;
@@ -2642,7 +2803,7 @@
           let minVal = Math.min(...realEq, ...monkeyCurves.flatMap(c => c));
           let maxVal = Math.max(...realEq, ...monkeyCurves.flatMap(c => c));
           let range = (maxVal - minVal) || 100.0;
-          
+
           minVal -= range * 0.05;
           maxVal += range * 0.05;
           range = maxVal - minVal;
@@ -2752,7 +2913,7 @@
           if (!activeResult.value) return;
           paintGaussianHistogram(activeBellCanvas.value, activeResult.value);
           paintEquityCurveComparison(activeEquityCanvas.value, activeResult.value);
-          
+
           let pass = activeResult.value.status === 'PASSED' ? 1 : 0;
           let fail = activeResult.value.status === 'FAILED' ? 1 : 0;
           drawPieChart(activeMiniPie.value, pass, fail);
@@ -2790,18 +2951,11 @@
           return total / bulkResults.value.length;
         });
 
-        const passedStrategiesCount = computed(() => {
-          return bulkResults.value.filter(r => r.status === 'PASSED').length;
-        });
-
-        const hasPassedStrategies = computed(() => {
-          return passedStrategiesCount.value > 0;
-        });
 
         // Initialize Resize Observers
         onMounted(() => {
           window.addEventListener('message', handleMessage);
-          
+
           // Apply initial prefers-color-scheme theme
           const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
           theme.value = prefersDark ? 'dark' : 'light';
@@ -2874,4 +3028,5 @@
     }).mount('#app');
   </script>
 </body>
+
 </html>
