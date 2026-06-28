@@ -2790,6 +2790,14 @@
           return total / bulkResults.value.length;
         });
 
+        const passedStrategiesCount = computed(() => {
+          return bulkResults.value.filter(r => r.status === 'PASSED').length;
+        });
+
+        const hasPassedStrategies = computed(() => {
+          return passedStrategiesCount.value > 0;
+        });
+
         // Initialize Resize Observers
         onMounted(() => {
           window.addEventListener('message', handleMessage);
