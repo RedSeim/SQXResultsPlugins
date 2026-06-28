@@ -48,5 +48,11 @@
   "disclaimerHtml": "Este análisis se proporciona estrictamente con fines informativos y educativos dentro de StrategyQuant X. No constituye asesoramiento financiero, de inversión o de trading. Todos los resultados, incluidos los backtests y las simulaciones, se basan en datos históricos y rendimiento hipotético, que pueden no reflejar las condiciones futuras del mercado. El rendimiento pasado no es indicativo de resultados futuros. Operar implica un riesgo sustancial, y debe realizar su propia investigación independiente y consultar a un asesor financiero con licencia antes de tomar cualquier decisión de inversión o trading. <strong>Esta herramienta utiliza matemáticas estadísticas basadas en secuencias históricas; la ejecución real del mercado puede variar significativamente.</strong>",
   "calculating": "Calculando...",
   "cancel": "Cancelar",
-  "processing": "Procesando: {name}"
+  "processing": "Procesando: {name}",
+  "sqxUploadLabel": "Archivos de Estrategia .sqx",
+  "sqxDropText": "Arrastra los archivos .sqx aquí o haz clic para buscar",
+  "downloadPassedZip": "Descargar Aprobadas ({count}) .zip",
+  "errSqxNoFiles": "Por favor, carga los archivos .sqx de todas las estrategias.",
+  "errSqxMissingFiles": "Faltan los archivos .sqx para",
+  "errSqxExtraFiles": "Se cargaron archivos .sqx adicionales"
 }

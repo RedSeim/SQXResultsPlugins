@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Databank Monkey Test</title>
   <script src="./vue.global.prod.js"></script>
+  <script src="./jszip.min.js"></script>
   <style>
     /* ===================================================================
        Design System & Variables
@@ -634,6 +635,29 @@
             </div>
           </div>
 
+          <!-- Bulk SQX files upload -->
+          <div class="form-group" v-if="bulkStrategies.length > 0">
+            <label>{{ t('sqxUploadLabel') }}</label>
+            <div class="upload-box" :class="{ 'upload-box-success': sqxFiles.size > 0 && !sqxValidationError }">
+              <div v-if="sqxFiles.size === 0">
+                <span class="icon">📦</span>
+                <span style="font-size: 11px;">{{ t('sqxDropText') }}</span>
+              </div>
+              <div v-else style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <span style="font-size: 12px;">Loaded: {{ sqxFiles.size }} / {{ bulkStrategies.length }} .sqx files</span>
+                <button @click="clearSqxFiles" class="btn btn-sm btn-danger">Clear</button>
+              </div>
+              <input type="file" accept=".sqx" multiple @change="loadSqxFiles">
+            </div>
+            <!-- Validation alerts -->
+            <div v-if="sqxValidationError" style="background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger); padding: 8px 10px; border-radius: 4px; font-size: 11px; line-height: 1.3; margin-top: 6px; word-break: break-all;">
+              {{ sqxValidationError }}
+            </div>
+            <div v-if="sqxFiles.size > 0 && !sqxValidationError" style="background: var(--success-bg); color: var(--success); border: 1px solid var(--success); padding: 8px 10px; border-radius: 4px; font-size: 11px; line-height: 1.3; margin-top: 6px;">
+              All .sqx files validated successfully.
+            </div>
+          </div>
+
           <!-- Period selector -->
           <div class="form-group">
             <label>{{ t('periodLabel') }}</label>
@@ -678,7 +702,7 @@
           </div>
 
           <!-- Run / Cancel test btn -->
-          <button v-if="!isCalculating" class="btn btn-primary" :disabled="priceData.length === 0 || (activeStrategy === null && bulkStrategies.length === 0)" @click="runTestOnAll">
+          <button v-if="!isCalculating" class="btn btn-primary" :disabled="priceData.length === 0 || (activeStrategy === null && bulkStrategies.length === 0) || (bulkStrategies.length > 0 && sqxValidationError)" @click="runTestOnAll">
             {{ t('runTest') }}
           </button>
           <button v-else class="btn btn-danger" @click="cancelCalculation">
@@ -781,8 +805,11 @@
           <div class="dashboard-grid">
             <!-- Results list -->
             <div class="results-table-box">
-              <div class="table-header">
+              <div class="table-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                 <span>{{ t('strategiesGrid') }}</span>
+                <button v-if="bulkResults.length > 0" class="btn btn-success btn-sm" :disabled="!hasPassedStrategies || sqxFiles.size === 0 || sqxValidationError" @click="downloadPassedZip">
+                  📦 {{ t('downloadPassedZip', { count: passedStrategiesCount }) }}
+                </button>
               </div>
               <div class="table-scroll">
                 <table>
@@ -935,7 +962,13 @@
         "disclaimerHtml": "This analysis is provided strictly for informational and educational purposes within StrategyQuant X. It does not constitute financial, investment, or trading advice. All results, including backtests and simulations, are based on historical data and hypothetical performance, which may not reflect future market conditions. Past performance is not indicative of future results. Trading involves substantial risk, and you should conduct your own independent research and consult a licensed financial advisor before making any investment or trading decisions. <strong>This tool utilizes statistical math based on historical sequences; actual market execution may vary significantly.</strong>",
         "calculating": "Calculating...",
         "cancel": "Cancel",
-        "processing": "Processing: {name}"
+        "processing": "Processing: {name}",
+        "sqxUploadLabel": ".sqx Strategy Files",
+        "sqxDropText": "Drag & drop .sqx files here or click to browse",
+        "downloadPassedZip": "Download Passed ({count}) .zip",
+        "errSqxNoFiles": "Please upload the .sqx files for all strategies.",
+        "errSqxMissingFiles": "Missing .sqx files for",
+        "errSqxExtraFiles": "Extra .sqx files uploaded"
       },
       es: {
         "title": "Test del Mono del Databank",
@@ -988,7 +1021,13 @@
         "disclaimerHtml": "Este análisis se proporciona estrictamente con fines informativos y educativos dentro de StrategyQuant X. No constituye asesoramiento financiero, de inversión o de trading. Todos los resultados, incluidos los backtests y las simulaciones, se basan en datos históricos y rendimiento hipotético, que pueden no reflejar las condiciones futuras del mercado. El rendimiento pasado no es indicativo de resultados futuros. Operar implica un riesgo sustancial, y debe realizar su propia investigación independiente y consultar a un asesor financiero con licencia antes de tomar cualquier decisión de inversión o trading. <strong>Esta herramienta utiliza matemáticas estadísticas basadas en secuencias históricas; la ejecución real del mercado puede variar significativamente.</strong>",
         "calculating": "Calculando...",
         "cancel": "Cancelar",
-        "processing": "Procesando: {name}"
+        "processing": "Procesando: {name}",
+        "sqxUploadLabel": "Archivos de Estrategia .sqx",
+        "sqxDropText": "Arrastra los archivos .sqx aquí o haz clic para buscar",
+        "downloadPassedZip": "Descargar Aprobadas ({count}) .zip",
+        "errSqxNoFiles": "Por favor, carga los archivos .sqx de todas las estrategias.",
+        "errSqxMissingFiles": "Faltan los archivos .sqx para",
+        "errSqxExtraFiles": "Se cargaron archivos .sqx adicionales"
       }
     };
 
@@ -1022,6 +1061,18 @@
         const bulkResults = ref([]); // results list of bulk strategies
 
         const inspectedStrategy = ref(null);
+
+        // SQX Files and validation
+        const sqxFiles = ref(new Map()); // map of strategyName -> File object
+        const sqxValidationError = ref('');
+
+        const passedStrategiesCount = computed(() => {
+          return bulkResults.value.filter(res => res.status === 'PASSED').length;
+        });
+
+        const hasPassedStrategies = computed(() => {
+          return passedStrategiesCount.value > 0;
+        });
 
         // Web Worker states
         const isCalculatingActive = ref(false);
@@ -1449,7 +1500,8 @@
 
                   bulkStrategies.value = parsedList;
                   bulkResults.value = [];
-                  if (priceData.value.length > 0) {
+                  validateSqxFiles();
+                  if (priceData.value.length > 0 && !sqxValidationError.value) {
                     runBulkTest();
                   }
                 }
@@ -1470,6 +1522,140 @@
           bulkStrategies.value = [];
           bulkResults.value = [];
           inspectedStrategy.value = null;
+          clearSqxFiles();
+        };
+
+        // ===================================================================
+        // SQX Files uploading, validation and ZIP generation
+        // ===================================================================
+        const validateSqxFiles = () => {
+          sqxValidationError.value = '';
+          if (bulkStrategies.value.length === 0) return;
+
+          // Normalize names for comparison
+          const normalize = name => name.toLowerCase().replace(/[\s_\-\/]/g, '');
+
+          const csvNames = new Set(bulkStrategies.value.map(s => s.name));
+          const csvNamesNormalized = new Map(bulkStrategies.value.map(s => [normalize(s.name), s.name]));
+
+          if (sqxFiles.value.size === 0) {
+            sqxValidationError.value = t('errSqxNoFiles');
+            return;
+          }
+
+          // Check for missing files
+          const missing = [];
+          for (let name of csvNames) {
+            let found = false;
+            if (sqxFiles.value.has(name)) {
+              found = true;
+            } else {
+              const normName = normalize(name);
+              for (let fileName of sqxFiles.value.keys()) {
+                if (normalize(fileName) === normName) {
+                  found = true;
+                  break;
+                }
+              }
+            }
+            if (!found) {
+              missing.push(name);
+            }
+          }
+
+          // Check for extra files
+          const extra = [];
+          for (let fileName of sqxFiles.value.keys()) {
+            let found = false;
+            if (csvNames.has(fileName)) {
+              found = true;
+            } else {
+              const normFileName = normalize(fileName);
+              if (csvNamesNormalized.has(normFileName)) {
+                found = true;
+              }
+            }
+            if (!found) {
+              extra.push(fileName);
+            }
+          }
+
+          if (missing.length > 0 || extra.length > 0) {
+            let msg = '';
+            if (missing.length > 0) {
+              msg += t('errSqxMissingFiles') + ': ' + missing.join(', ') + '. ';
+            }
+            if (extra.length > 0) {
+              msg += t('errSqxExtraFiles') + ': ' + extra.join(', ') + '.';
+            }
+            sqxValidationError.value = msg;
+          }
+        };
+
+        const loadSqxFiles = (e) => {
+          sqxValidationError.value = '';
+          const files = e.target.files;
+          if (!files || files.length === 0) return;
+
+          const nextMap = new Map(sqxFiles.value);
+          for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const nameClean = file.name.replace(/\.sqx$/i, '');
+            nextMap.set(nameClean, file);
+          }
+          sqxFiles.value = nextMap;
+          validateSqxFiles();
+        };
+
+        const clearSqxFiles = () => {
+          sqxFiles.value = new Map();
+          sqxValidationError.value = '';
+        };
+
+        const downloadPassedZip = () => {
+          if (bulkResults.value.length === 0 || sqxFiles.value.size === 0 || sqxValidationError.value) return;
+
+          const passed = bulkResults.value.filter(res => res.status === 'PASSED');
+          if (passed.length === 0) return;
+
+          const normalize = name => name.toLowerCase().replace(/[\s_\-\/]/g, '');
+
+          const findFileForStrategy = (stratName) => {
+            if (sqxFiles.value.has(stratName)) return sqxFiles.value.get(stratName);
+            const normName = normalize(stratName);
+            for (let [fileName, fileObj] of sqxFiles.value.entries()) {
+              if (normalize(fileName) === normName) return fileObj;
+            }
+            return null;
+          };
+
+          const zip = new JSZip();
+          let count = 0;
+
+          passed.forEach(res => {
+            const file = findFileForStrategy(res.name);
+            if (file) {
+              const filename = file.name.endsWith('.sqx') ? file.name : `${file.name}.sqx`;
+              zip.file(filename, file);
+              count++;
+            }
+          });
+
+          if (count === 0) {
+            errorMessage.value = "No files found to package in ZIP.";
+            return;
+          }
+
+          zip.generateAsync({ type: "blob" }).then(function(content) {
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(content);
+            link.download = "passed_strategies.zip";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          }).catch(err => {
+            errorMessage.value = "ZIP generation failed: " + err.message;
+          });
         };
 
         // ===================================================================
@@ -2667,7 +2853,14 @@
           isCalculating,
           progress,
           currentProcessingName,
-          cancelCalculation
+          cancelCalculation,
+          sqxFiles,
+          sqxValidationError,
+          passedStrategiesCount,
+          hasPassedStrategies,
+          loadSqxFiles,
+          clearSqxFiles,
+          downloadPassedZip
         };
       }
     }).mount('#app');
