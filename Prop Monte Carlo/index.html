@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Prop Monte Carlo</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        /* --- Design System based on SQX Batch1 (Bootstrap 3 ish) --- */
+        :root {
+            /* Light Theme (Default) */
+            --bg-body: #ffffff;
+            --bg-panel: #f8f8f8;
+            --bg-input: #ffffff;
+
+            --text-main: #333333;
+            --text-muted: #777777;
+
+            --border-color: #dddddd;
+            --input-border: #cccccc;
+
+            --primary: #337ab7;
+            --primary-hover: #286090;
+
+            --success: #5cb85c;
+            --success-bg: #dff0d8;
+            --success-text: #3c763d;
+
+            --danger: #d9534f;
+            --danger-bg: #f2dede;
+            --danger-text: #a94442;
+
+            --focus-glow: rgba(102, 175, 233, .6);
+            --focus-border: #66afe9;
+
+            --font-family: "Open Sans", Helvetica, Arial, sans-serif;
+        }
+
+        /* Dark Theme */
+        [data-theme="dark"] {
+            --bg-body: #1e1e1e;
+            --bg-panel: #2d2d2d;
+            --bg-input: #383838;
+
+            --text-main: #e0e0e0;
+            --text-muted: #aaaaaa;
+
+            --border-color: #444444;
+            --input-border: #555555;
+
+            --primary: #337ab7;
+            --primary-hover: #4090d0;
+
+            --success: #5cb85c;
+            --success-bg: rgba(92, 184, 92, 0.2);
+            --success-text: #81c784;
+
+            --danger: #d9534f;
+            --danger-bg: rgba(217, 83, 79, 0.2);
+            --danger-text: #e57373;
+
+            --focus-glow: rgba(102, 175, 233, .4);
+            --focus-border: #4d90fe;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: var(--font-family);
+            font-size: 14px;
+            margin: 0;
+            padding: 20px;
+            height: calc(100vh - 20px);
+            /* Explicit match to bottom of window */
+            overflow: hidden;
+        }
+
+        #app {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin: 0 0 5px 0;
+            font-weight: 500;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            margin: 0 0 20px 0;
+        }
+
+        /* Layout */
+        .app-container {
+            display: flex;
+            gap: 20px;
+            flex-grow: 1;
+            min-height: 0;
+        }
+
+        /* Sidebar / Panel */
+        /* Sidebar Layout */
+        .sidebar {
+            width: 320px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            overflow: hidden;
+            /* Prevent sidebar itself from scrolling */
+        }
+
+        .sidebar-header {
+            padding: 20px 20px 10px 20px;
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .sidebar-content {
+            padding: 20px;
+            overflow-y: auto;
+            /* Content area scrolls */
+            flex-grow: 1;
+        }
+
+        .sidebar-footer {
+            padding: 15px 20px;
+            background-color: var(--sidebar-bg);
+            border-top: 1px solid var(--border-color);
+            flex-shrink: 0;
+            margin-top: auto;
+        }
+
+        .sidebar h2 {
+            font-size: 18px;
+            margin: 0;
+            color: var(--text-main);
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .form-control {
+            display: block;
+            width: 100%;
+            padding: 6px 12px;
+            font-size: 14px;
+            color: var(--text-main);
+            background-color: var(--bg-input);
+            background-image: none;
+            border: 1px solid var(--input-border);
+            border-radius: 4px;
+            box-sizing: border-box;
+            transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+        }
+
+        .form-control:focus {
+            border-color: var(--focus-border);
+            outline: 0;
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px var(--focus-glow);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 6px 12px;
+            margin-bottom: 0;
+            font-size: 14px;
+            font-weight: 400;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            user-select: none;
+        }
+
+        .btn-primary {
+            color: #fff;
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 0;
+            overflow: hidden;
+            /* Prevent scrollbars */
+        }
+
+        /* KPIs */
+        .kpi-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .kpi-card {
+            flex: 1;
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .kpi-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .kpi-value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .text-success {
+            color: var(--success-text);
+        }
+
+        .text-danger {
+            color: var(--danger-text);
+        }
+
+        /* Chart */
+        .chart-container-wrapper {
+            width: 100%;
+            flex-grow: 1;
+            min-height: 0;
+            /* Let it shrink to fit */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-container {
+            flex-grow: 1;
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-inner {
+            flex-grow: 1;
+            position: relative;
+        }
+
+        .chart-inner canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .chart-placeholder {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            color: var(--text-muted);
+            font-weight: 600;
+            pointer-events: none;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-body);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .run-btn-container {
+            margin-top: auto;
+            padding-top: 15px;
+        }
+
+        /* --- Tooltip System (Ported from PropAnalytics) --- */
+        .tooltip-container {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            margin-left: 6px;
+            cursor: help;
+            z-index: 50;
+        }
+
+        .tooltip-container:hover {
+            z-index: 999;
+        }
+
+        .tooltip-icon {
+            width: 14px;
+            height: 14px;
+            fill: var(--text-muted);
+            transition: fill 0.2s;
+        }
+
+        .tooltip-container:hover .tooltip-icon {
+            fill: var(--text-main);
+        }
+
+        .tooltip-content {
+            visibility: hidden;
+            opacity: 0;
+            width: 250px;
+            background-color: var(--bg-panel);
+            color: var(--text-main);
+            text-align: left;
+            border-radius: 4px;
+            padding: 12px;
+            position: absolute;
+            z-index: 100;
+            top: 125%;
+            left: 50%;
+            margin-left: -125px;
+            font-size: 12px;
+            font-weight: normal;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: opacity 0.2s, visibility 0.2s;
+            pointer-events: none;
+            line-height: 1.4;
+        }
+
+        .tooltip-content::after {
+            content: "";
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent transparent var(--border-color) transparent;
+        }
+
+        .tooltip-container:hover .tooltip-content {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Disclaimer Styling */
+        .disclaimer {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            text-align: justify;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app">
+
+        <!-- Header -->
+        <div style="display: flex; align-items: baseline; gap: 10px;">
+            <h1 style="margin-bottom: 0;">{{ t('title') }}</h1>
+            <div class="tooltip-container" style="margin-top: 5px;">
+                <svg class="tooltip-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                </svg>
+                <div class="tooltip-content" style="width: 320px; left: 0; margin-left: 0;" v-html="tHtml('introTooltipHtml')"></div>
+            </div>
+        </div>
+        <p class="subtitle" style="margin-top: 5px;">{{ t('subtitle') }}</p>
+
+        <div class="app-container">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h2>{{ t('parameters') }}</h2>
+                </div>
+
+                <div class="sidebar-content">
+                    <!-- Balance -->
+                    <div class="form-group">
+                        <label>{{ t('startEquity') }} ($)</label>
+                        <input type="number" class="form-control" v-model.number="params.balance">
+                    </div>
+
+                    <!-- Win Rate -->
+                    <div class="form-group">
+                        <label>{{ t('winRate') }} (%)</label>
+                        <input type="number" class="form-control" step="0.1" v-model.number="params.winRate">
+                    </div>
+
+                    <!-- Risk -->
+                    <div class="form-group">
+                        <label>{{ t('riskPerTrade') }} (%)</label>
+                        <input type="number" class="form-control" step="0.1" v-model.number="params.riskPct">
+                    </div>
+
+                    <!-- RRR -->
+                    <div class="form-group">
+                        <label>{{ t('rewardToRisk') }}</label>
+                        <input type="number" class="form-control" step="0.1" v-model.number="params.rrr">
+                    </div>
+
+                    <!-- Target -->
+                    <div class="form-group">
+                        <label>{{ t('profitTarget') }} (%)</label>
+                        <input type="number" class="form-control" v-model.number="params.targetPct">
+                    </div>
+
+                    <!-- Max DD -->
+                    <div class="form-group">
+                        <label>{{ t('maxDrawdown') }} (%)</label>
+                        <input type="number" class="form-control" v-model.number="params.maxDdPct">
+                    </div>
+
+                    <!-- Simulations -->
+                    <div class="form-group">
+                        <label>{{ t('simulations') }}</label>
+                        <input type="number" class="form-control" v-model.number="params.numSims">
+                    </div>
+
+                    <!-- Trades -->
+                    <div class="form-group">
+                        <label>{{ t('tradesPerSim') }}</label>
+                        <input type="number" class="form-control" v-model.number="params.maxTrades">
+                    </div>
+                </div>
+
+                <div class="sidebar-footer">
+                    <div class="run-btn-container">
+                        <button class="btn btn-primary btn-block" :disabled="isRequesting"
+                            @click="runSimulation">
+                            {{ t('runSimulation') }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- KPIs -->
+                <div class="kpi-row">
+                    <div class="kpi-card">
+                        <div class="kpi-label">{{ t('passProbability') }}</div>
+                        <div class="kpi-value text-success">{{ results.passProb }}%</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">{{ t('riskOfRuin') }}</div>
+                        <div class="kpi-value text-danger">{{ results.ruinProb }}%</div>
+                    </div>
+                </div>
+
+                <!-- Chart -->
+                <div class="chart-container-wrapper">
+                    <div class="chart-container">
+                        <div class="chart-inner" ref="chartInner">
+                            <canvas ref="canvasEl"></canvas>
+                            <div v-if="!results.lastSimData" class="chart-placeholder">
+                                {{ t('noStrategySelected') }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="disclaimer" v-html="tHtml('disclaimerHtml')"></div>
+    </div>
+
+    <!-- Load Vue Locally -->
+    <script src="./vue.global.prod.js"></script>
+
+    <script>
+        const { createApp, ref, reactive, onMounted, nextTick } = Vue;
+
+        // Must be reactive so async locale loading triggers re-render.
+        const messages = reactive({});
+        const loadedLocales = new Set();
+
+        async function loadLocale(localeKey) {
+            if (!localeKey || loadedLocales.has(localeKey)) return;
+            try {
+                const resp = await fetch(`./locales/${localeKey}.json`, { credentials: 'same-origin' });
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                messages[localeKey] = await resp.json();
+                loadedLocales.add(localeKey);
+            } catch (e) {
+                if (localeKey !== 'en') await loadLocale('en');
+            }
+        }
+
+        createApp({
+            setup() {
+                const theme = ref('light');
+                const lang = ref('en');
+                        // Used to force re-render when locale JSON is loaded async.
+                        const localeVersion = ref(0);
+                const canvasEl = ref(null);
+                const chartInner = ref(null);
+
+                const params = reactive({
+                    balance: 100000,
+                    winRate: 50.0,
+                    riskPct: 1.0,
+                    rrr: 1.5,
+                    targetPct: 10,
+                    maxDdPct: 10,
+                    numSims: 1000,
+                    maxTrades: 1000
+                });
+
+                const results = reactive({
+                    passProb: 0,
+                    ruinProb: 0,
+                    lastSimData: null
+                });
+
+                const statsReady = ref(false);
+                const ordersReady = ref(false);
+                const simulationRequested = ref(false);
+                const isRequesting = ref(false);
+                const strategyInfo = ref(null);
+
+                const t = (key) => {
+                    // Touch localeVersion so Vue tracks it during render.
+                    localeVersion.value;
+                    return messages[lang.value]?.[key] || messages.en?.[key] || key;
+                };
+
+                const tHtml = (key) => {
+                    return t(key);
+                };
+
+
+                const requestStats = () => {
+                    const msg = {
+                        type: 'GET_STATS',
+                        params: { resultKey: 'Portfolio', direction: '0', sampleType: '127', plType: '10' }
+                    };
+                    if (window.parent && window.parent !== window) {
+                        window.parent.postMessage(msg, '*');
+                    }
+                };
+
+                const requestOrders = () => {
+                    const msg = {
+                        type: 'GET_ORDERS',
+                        params: { resultKey: 'Portfolio', direction: '0', sampleType: '127' }
+                    };
+                    if (window.parent && window.parent !== window) {
+                        window.parent.postMessage(msg, '*');
+                    }
+                };
+
+                const isStrategyValid = (info) => {
+                    return info?.projectName && String(info.projectName).trim() !== ''
+                        && info?.databankName && String(info.databankName).trim() !== ''
+                        && info?.strategyName && String(info.strategyName).trim() !== '';
+                };
+
+                const handleMessage = (event) => {
+                    const type = event.data.type;
+                    const payload = event.data.data;
+
+                    if (type === 'STRATEGY_DATA') {
+                        // New strategy selected: reset simulation state (only when identifiers are present).
+                        strategyInfo.value = payload;
+                        resetPage();
+
+                        if (!isStrategyValid(payload)) {
+                            // No strategy selected (or host hasn't filled identifiers yet).
+                            simulationRequested.value = false;
+                            return;
+                        }
+                        
+                        // Auto-run simulation after receiving the new strategy.
+                        runSimulation();
+                    } else if (type === 'STATS_RESPONSE') {
+                        const stats = payload.stats;
+                        if (stats) {
+                            const profits = parseFloat(stats.NumberOfProfits) || 0;
+                            const total = parseFloat(stats.NumberOfTrades) || 1;
+                            params.winRate = parseFloat(((profits / total) * 100).toFixed(2));
+                            params.rrr = parseFloat((parseFloat(stats.PayoutRatio) || 0).toFixed(2));
+
+                            statsReady.value = true;
+                            if (simulationRequested.value && ordersReady.value) {
+                                runSimulation();
+                            }
+                        }
+                    } else if (type === 'ORDERS_RESPONSE') {
+                        const orders = payload.orders;
+                        if (orders && orders.length > 0) {
+                            const firstOrder = orders[0];
+                            if (firstOrder.Balance !== undefined && firstOrder.ProfitLoss !== undefined) {
+                                const initialBalance = firstOrder.Balance - firstOrder.ProfitLoss;
+                                params.balance = parseFloat(initialBalance.toFixed(2));
+
+                                ordersReady.value = true;
+                                if (simulationRequested.value && statsReady.value) {
+                                    runSimulation();
+                                }
+                            }
+                        }
+                    } else if (type === 'SET_LANGUAGE') {
+                        // Host sends SQ language object.
+                        const language = event.data.language || payload;
+                        const nextLocale = (typeof language === 'string' ? language : language?.flag || 'en').trim();
+                        lang.value = nextLocale;
+                        localeVersion.value++;
+                        document.documentElement.setAttribute('lang', nextLocale);
+                        console.log("[PropMonteCarlo] SET_LANGUAGE:", nextLocale);
+                        loadLocale(nextLocale).then(() => {
+                            localeVersion.value++;
+                        });
+                    } else if (type === 'SET_THEME' || type === 'SWITCH_THEME') {
+                        // Support both SET_THEME (used by SQX automatically) and legacy SWITCH_THEME
+                        const newTheme = event.data.theme || payload;
+                        if (newTheme === 'dark' || newTheme === 'light') {
+                            theme.value = newTheme;
+                            document.documentElement.setAttribute('data-theme', theme.value);
+                            drawChart();
+                        }
+                    }
+                };
+
+                const resetPage = () => {
+                    results.passProb = 0;
+                    results.ruinProb = 0;
+                    results.lastSimData = null;
+                    statsReady.value = false;
+                    ordersReady.value = false;
+                    simulationRequested.value = true;
+                    isRequesting.value = false;
+
+                    // Clear stale canvas content immediately.
+                    if (canvasEl.value && chartInner.value) {
+                        const rect = chartInner.value.getBoundingClientRect();
+                        const canvas = canvasEl.value;
+                        canvas.width = rect.width;
+                        canvas.height = rect.height;
+                        const ctx = canvas.getContext('2d');
+                        if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    }
+                };
+
+                const runSimulation = () => {
+                    if (!isStrategyValid(strategyInfo.value)) {
+                        return;
+                    }
+                    simulationRequested.value = true;
+                    // Request data only after user pressed the button.
+                    if (!(statsReady.value && ordersReady.value)) {
+                        if (!isRequesting.value) {
+                            isRequesting.value = true;
+                            requestStats();
+                            requestOrders();
+                        }
+                        return;
+                    }
+
+                    isRequesting.value = false;
+                    const balance = params.balance;
+                    const winRate = params.winRate / 100;
+                    const riskPct = params.riskPct / 100;
+                    const rrr = params.rrr;
+                    const targetPct = params.targetPct / 100;
+                    const maxDdPct = params.maxDdPct / 100;
+                    const numSims = params.numSims;
+                    const maxTrades = params.maxTrades;
+
+                    const targetAmount = balance * (1 + targetPct);
+                    const ruinAmount = balance * (1 - maxDdPct);
+                    const riskAmount = balance * riskPct;
+
+                    let passed = 0;
+                    let ruined = 0;
+
+                    const plottedSims = [];
+                    const maxPlot = 200;
+
+                    for (let i = 0; i < numSims; i++) {
+                        let equity = balance;
+                        let curve = [equity];
+                        let status = 'ongoing';
+
+                        for (let t = 0; t < maxTrades; t++) {
+                            const isWin = Math.random() < winRate;
+                            if (isWin) {
+                                equity += riskAmount * rrr;
+                            } else {
+                                equity -= riskAmount;
+                            }
+
+                            curve.push(equity);
+
+                            if (equity <= ruinAmount) {
+                                status = 'ruined';
+                                ruined++;
+                                break;
+                            }
+
+                            if (equity >= targetAmount) {
+                                status = 'passed';
+                                passed++;
+                                break;
+                            }
+                        }
+
+                        if (i < maxPlot) {
+                            plottedSims.push({ curve, status });
+                        }
+                    }
+
+                    results.passProb = ((passed / numSims) * 100).toFixed(1);
+                    results.ruinProb = ((ruined / numSims) * 100).toFixed(1);
+
+                    results.lastSimData = {
+                        sims: plottedSims,
+                        targetLevel: targetAmount,
+                        ruinLevel: ruinAmount,
+                        maxTrades: maxTrades,
+                        startLevel: balance
+                    };
+
+                    nextTick(drawChart);
+                    isRequesting.value = false;
+                };
+
+                const drawChart = () => {
+                    if (!results.lastSimData || !canvasEl.value || !chartInner.value) return;
+
+                    const canvas = canvasEl.value;
+                    const container = chartInner.value;
+                    const ctx = canvas.getContext('2d');
+
+                    const rect = container.getBoundingClientRect();
+                    canvas.width = rect.width;
+                    canvas.height = rect.height;
+
+                    const data = results.lastSimData;
+                    const { sims, targetLevel, ruinLevel, maxTrades, startLevel } = data;
+                    const width = canvas.width;
+                    const height = canvas.height;
+
+                    ctx.clearRect(0, 0, width, height);
+
+                    const padLeft = 60;
+                    const padRight = 60;
+                    const padTop = 30;
+                    const padBottom = 30;
+
+                    const chartW = width - padLeft - padRight;
+                    const chartH = height - padTop - padBottom;
+
+                    let minY = ruinLevel;
+                    let maxY = targetLevel;
+
+                    sims.forEach(s => {
+                        s.curve.forEach(val => {
+                            if (val < minY) minY = val;
+                            if (val > maxY) maxY = val;
+                        });
+                    });
+
+                    const rangeY = maxY - minY;
+                    minY -= rangeY * 0.05;
+                    maxY += rangeY * 0.05;
+
+                    const scaleY = chartH / (maxY - minY);
+                    const scaleX = chartW / maxTrades;
+
+                    const getX = (i) => padLeft + i * scaleX;
+                    const getY = (val) => padTop + (maxY - val) * scaleY;
+
+                    const isDark = theme.value === 'dark';
+                    const gridColor = isDark ? '#444' : '#ddd';
+                    const textColor = isDark ? '#aaa' : '#666';
+
+                    ctx.strokeStyle = gridColor;
+                    ctx.lineWidth = 1;
+
+                    const steps = 5;
+                    ctx.beginPath();
+                    for (let i = 0; i <= steps; i++) {
+                        const yVal = minY + (rangeY * (i / steps));
+                        const y = getY(yVal);
+                        ctx.moveTo(padLeft, y);
+                        ctx.lineTo(width - padRight, y);
+
+                        ctx.fillStyle = textColor;
+                        ctx.font = '10px "Open Sans", sans-serif';
+                        ctx.textAlign = 'right';
+                        ctx.fillText(yVal.toFixed(0), padLeft - 10, y + 3);
+                    }
+                    ctx.stroke();
+
+                    const drawLine = (val, color, dash, label) => {
+                        const y = getY(val);
+                        ctx.beginPath();
+                        ctx.strokeStyle = color;
+                        if (dash) ctx.setLineDash(dash);
+                        else ctx.setLineDash([]);
+                        ctx.moveTo(padLeft, y);
+                        ctx.lineTo(width - padRight, y);
+                        ctx.stroke();
+
+                        if (label) {
+                            ctx.fillStyle = color;
+                            ctx.textAlign = 'left';
+                            ctx.fillText(label, width - padRight + 10, y + 3);
+                        }
+                    };
+
+                    drawLine(targetLevel, isDark ? '#81c784' : '#5cb85c', [5, 5], t('target'));
+                    drawLine(ruinLevel, isDark ? '#e57373' : '#d9534f', [5, 5], t('maxDd'));
+                    drawLine(startLevel, isDark ? '#888' : '#444', [], t('start'));
+                    ctx.setLineDash([]);
+
+                    ctx.lineWidth = 1;
+                    sims.forEach(sim => {
+                        ctx.beginPath();
+                        if (sim.status === 'ruined') ctx.strokeStyle = isDark ? 'rgba(217, 83, 79, 0.4)' : 'rgba(217, 83, 79, 0.3)';
+                        else if (sim.status === 'passed') ctx.strokeStyle = isDark ? 'rgba(92, 184, 92, 0.4)' : 'rgba(92, 184, 92, 0.3)';
+                        else ctx.strokeStyle = isDark ? 'rgba(150, 150, 150, 0.3)' : 'rgba(100, 100, 100, 0.3)';
+
+                        sim.curve.forEach((val, i) => {
+                            const x = getX(i);
+                            const y = getY(val);
+                            if (i === 0) ctx.moveTo(x, y);
+                            else ctx.lineTo(x, y);
+                        });
+                        ctx.stroke();
+                    });
+
+                    ctx.fillStyle = textColor;
+                    ctx.textAlign = 'center';
+                    for (let i = 0; i <= maxTrades; i += Math.max(1, Math.floor(maxTrades / 10))) {
+                        const x = getX(i);
+                        ctx.fillText(i, x, height - 10);
+                    }
+                };
+
+                onMounted(() => {
+                    loadLocale('en').then(() => { localeVersion.value++; });
+                    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                        theme.value = 'dark';
+                    }
+                    const urlParams = new URLSearchParams(window.location.search);
+                    if (urlParams.get('theme') === 'dark') theme.value = 'dark';
+                    if (urlParams.get('lang')) lang.value = urlParams.get('lang');
+
+                    document.documentElement.setAttribute('data-theme', theme.value);
+
+                    window.addEventListener('message', handleMessage);
+                    window.addEventListener('resize', drawChart);
+
+                    if (chartInner.value) {
+                        const ro = new ResizeObserver(drawChart);
+                        ro.observe(chartInner.value);
+                    }
+                });
+
+                return {
+                    theme,
+                    lang,
+                    params,
+                    results,
+                    t,
+                    tHtml,
+                    runSimulation,
+                    statsReady,
+                    ordersReady,
+                    isRequesting,
+                    canvasEl,
+                    chartInner
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+
+</html>

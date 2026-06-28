@@ -1,0 +1,23 @@
+{
+  "title": "Analyse de probabilité de réussite",
+  "subtitle": "Simulation Monte Carlo de la probabilité que votre stratégie réussisse un challenge.",
+  "parameters": "Paramètres",
+  "startEquity": "Capital initial",
+  "winRate": "Taux de gain",
+  "riskPerTrade": "Risque par trade",
+  "rewardToRisk": "Rapport gain/risque (R)",
+  "profitTarget": "Objectif de profit",
+  "maxDrawdown": "Drawdown maximum",
+  "simulations": "Simulations",
+  "tradesPerSim": "Trades par simulation",
+  "runSimulation": "Lancer la simulation",
+  "passProbability": "Probabilité de réussite",
+  "riskOfRuin": "Risque de ruine",
+  "target": "CIBLE",
+  "maxDd": "DD MAX",
+  "start": "DÉPART",
+  "switchTheme": "Changer le thème",
+  "introTooltipHtml": "La simulation Monte Carlo de StrategyQuant vous aide à estimer la probabilité de réussir un challenge de prop firm ou d'atteindre une limite de drawdown en fonction du taux de gain, du rapport risque/récompense et du risque par trade de votre stratégie.<br><br><strong>Exemple pratique :</strong><br>Si votre stratégie a un taux de gain de 50 % et un RRR de 1:2, et que vous risquez 1 % par trade pour atteindre un objectif de profit de 10 % sans dépasser un drawdown de 10 % :<ol style=\"margin: 5px 0 0 15px; padding: 0;\"><li>Entrez ces valeurs dans les paramètres.</li><li>Lancez la simulation (par ex. 1 000 fois).</li><li>Si la « Probabilité de réussite » est de 70 %, cela signifie que dans 700 des 1 000 « univers » simulés, votre stratégie a atteint l'objectif avant la limite de drawdown.</li></ol><br><em>Note : Il s'agit de calculs statistiques basés sur des séquences de trades aléatoires (échantillonnage Monte Carlo).</em>",
+  "disclaimerHtml": "Cette analyse est fournie strictement à titre informatif et éducatif dans StrategyQuant X. Elle ne constitue pas un conseil financier, d'investissement ou de trading. Tous les résultats, y compris les backtests et les simulations, sont basés sur des données historiques et des performances hypothétiques, qui peuvent ne pas refléter les conditions futures du marché. Les performances passées ne préjugent pas des résultats futurs. Le trading comporte des risques substantiels ; vous devez effectuer vos propres recherches indépendantes et consulter un conseiller financier agréé avant de prendre toute décision d'investissement ou de trading. <strong>Cet outil utilise des calculs statistiques basés sur des séquences historiques ; l'exécution réelle sur les marchés peut varier significativement.</strong>",
+  "noStrategySelected": "Aucune stratégie sélectionnée"
+}

@@ -1,0 +1,24 @@
+{
+  "title": "Analisi della Probabilità di Superamento",
+  "subtitle": "Simulazione Monte Carlo della probabilità che la tua strategia superi una sfida.",
+  "parameters": "Parametri",
+  "startEquity": "Capitale Iniziale",
+  "winRate": "Tasso di Vincita",
+  "riskPerTrade": "Rischio per Operazione",
+  "rewardToRisk": "Rendimento/Rischio (R)",
+  "profitTarget": "Obiettivo di Profitto",
+  "maxDrawdown": "Massimo Drawdown",
+  "simulations": "Simulazioni",
+  "tradesPerSim": "Operazioni per Simulazione",
+  "runSimulation": "Avvia Simulazione",
+  "passProbability": "Probabilità di Superamento",
+  "riskOfRuin": "Rischio di Rovinare",
+  "target": "TARGET",
+  "maxDd": "MAX DD",
+  "start": "INIZIO",
+  "switchTheme": "Cambia Tema",
+  "introTooltipHtml": "La simulazione Monte Carlo di StrategyQuant ti aiuta a stimare la probabilità di superare la sfida di una prop firm o di raggiungere un limite di drawdown in base al tasso di vincita della tua strategia, al rapporto rendimento/rischio e al rischio per operazione.<br><br><strong>Esempio pratico:</strong><br>Se la tua strategia ha un tasso di vincita del 50% e un RRR 1:2, e rischi l'1% per operazione per raggiungere un obiettivo di profitto del 10% senza toccare un drawdown del 10%:<ol style=\"margin: 5px 0 0 15px; padding: 0;\"><li>Inserisci questi valori nei parametri.</li><li>Esegui la simulazione (ad es. 1000 volte).</li><li>Se la 'Probabilità di Superamento' è 70%, significa che in 700 su 1000 universi simulati la tua strategia ha raggiunto l'obiettivo prima del limite di drawdown.</li></ol><br><em>Nota: si tratta di calcoli statistici basati su sequenze casuali di operazioni (campionamento Monte Carlo).</em>",
+  "disclaimerHtml": "Questa analisi è fornita esclusivamente per scopi informativi ed educativi all'interno di StrategyQuant X. Non costituisce consulenza finanziaria, di investimento o di trading. Tutti i risultati, incluse backtest e simulazioni, si basano su dati storici e prestazioni ipotetiche che potrebbero non riflettere le condizioni di mercato future. Le prestazioni passate non sono indicative dei risultati futuri. Il trading comporta un rischio sostanziale e dovresti condurre le tue ricerche indipendenti e consultare un consulente finanziario autorizzato prima di prendere qualsiasi decisione di investimento o di trading. <strong>Questo strumento utilizza calcoli statistici basati su sequenze storiche; l'esecuzione reale sul mercato può differire significativamente.</strong>",
+  "noStrategySelected": "Nessuna strategia selezionata"
+}
+

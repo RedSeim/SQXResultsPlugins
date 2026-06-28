@@ -1,0 +1,24 @@
+{
+  "title": "Analýza Pravděpodobnosti Úspěchu",
+  "subtitle": "Monte Carlo simulace pravděpodobnosti splnění výzvy na základě statistiky vaší strategie.",
+  "parameters": "Parametry",
+  "startEquity": "Počáteční Kapitál",
+  "winRate": "Úspěšnost",
+  "riskPerTrade": "Riziko na Obchod",
+  "rewardToRisk": "Odměna vůči Riziku (R)",
+  "profitTarget": "Cílový Zisk",
+  "maxDrawdown": "Maximální Ztráta (DD)",
+  "simulations": "Počet Simulací",
+  "tradesPerSim": "Obchodů na Simulaci",
+  "runSimulation": "Spustit Simulaci",
+  "passProbability": "Pravděpodobnost Úspěchu",
+  "riskOfRuin": "Riziko Krachu",
+  "target": "CÍL",
+  "maxDd": "MAX DD",
+  "start": "START",
+  "switchTheme": "Přepnout Téma",
+  "introTooltipHtml": "StrategyQuant Monte Carlo simulace vám pomáhá odhadnout pravděpodobnost, že projdete výzvou prop firmy, nebo že zasáhnete limit maximální ztráty (drawdown) na základě úspěšnosti vaší strategie, poměru zisk/riziko a rizika na obchod.<br><br><strong>Praktický příklad:</strong><br>Pokud má vaše strategie 50% úspěšnost a 1:2 RRR a riskujete 1% na obchod, abyste dosáhli 10% ziskového cíle bez toho, abyste zasáhli 10% drawdown:<ol style=\"margin: 5px 0 0 15px; padding: 0;\"><li>Zadejte tyto hodnoty do parametrů.</li><li>Spusťte simulaci (např. 1000×).</li><li>Pokud je 'Pravděpodobnost Úspěchu' 70 %, znamená to, že ve 700 z 1000 simulovaných 'vesmírů' vaše strategie dosáhla cíle dříve, než došlo k limitu drawdown.</li></ol><br><em>Poznámka: Jedná se o statistické počty založené na náhodných sekvencích obchodů (Monte Carlo sampling).</em>",
+  "disclaimerHtml": "Tato analýza je poskytována přísně pro informační a vzdělávací účely v rámci StrategyQuant X. Nepředstavuje finanční, investiční ani obchodní doporučení. Všechny výsledky včetně backtestů a simulací vycházejí z historických dat a hypotetické výkonnosti, která nemusí odrážet budoucí tržní podmínky. Minulá výkonnost není zárukou budoucích výsledků. Obchodování zahrnuje významné riziko a měli byste si provést vlastní nezávislý průzkum a před jakýmkoli investičním nebo obchodním rozhodnutím se poradit s licencovaným finančním poradcem. <strong>Tento nástroj využívá statistické výpočty založené na historických sekvencích; skutečné obchodní provedení se může výrazně lišit.</strong>",
+  "noStrategySelected": "Nebyla vybrána žádná strategie"
+}
+

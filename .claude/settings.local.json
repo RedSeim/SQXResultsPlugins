@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(if \\($?\\) { \"en.json OK\" })",
+      "PowerShell(if \\($?\\) { \"es.json OK\" })",
+      "Bash(node -e ' *)"
+    ]
+  }
+}

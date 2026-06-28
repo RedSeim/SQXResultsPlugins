@@ -1,0 +1,24 @@
+{
+  "title": "Analiza Prawdopodobieństwa Sukcesu",
+  "subtitle": "Symulacja Monte Carlo pokazująca prawdopodobieństwo, że Twoja strategia przejdzie wyzwanie.",
+  "parameters": "Parametry",
+  "startEquity": "Kapitał Początkowy",
+  "winRate": "Wskaźnik Zwycięstw",
+  "riskPerTrade": "Ryzyko na Transakcję",
+  "rewardToRisk": "Zysk do Ryzyka (R)",
+  "profitTarget": "Cel Zysku",
+  "maxDrawdown": "Maksymalny Drawdown",
+  "simulations": "Symulacje",
+  "tradesPerSim": "Transakcje na Symulację",
+  "runSimulation": "Uruchom Symulację",
+  "passProbability": "Prawdopodobieństwo Sukcesu",
+  "riskOfRuin": "Ryzyko Ruiny",
+  "target": "CEL",
+  "maxDd": "MAX DD",
+  "start": "START",
+  "switchTheme": "Zmień Motyw",
+  "introTooltipHtml": "Symulacja StrategyQuant Monte Carlo pomaga oszacować prawdopodobieństwo przejścia wyzwania prop firm lub trafienia w limit drawdown w oparciu o współczynnik wygranych strategii, relację zysk/ryzyko oraz ryzyko na transakcję.<br><br><strong>Przykład praktyczny:</strong><br>Jeśli Twoja strategia ma 50% współczynnik wygranych i RRR 1:2 oraz ryzykujesz 1% na transakcję, aby osiągnąć 10% cel zysku bez osiągnięcia 10% drawdown:<ol style=\"margin: 5px 0 0 15px; padding: 0;\"><li>Wprowadź te wartości w parametrach.</li><li>Uruchom symulację (np. 1000 razy).</li><li>Jeśli 'Prawdopodobieństwo Sukcesu' wynosi 70%, oznacza to, że w 700 z 1000 symulowanych 'światów' Twoja strategia osiągnęła cel zanim przekroczono limit drawdown.</li></ol><br><em>Uwaga: to obliczenia statystyczne oparte na losowych sekwencjach transakcji (próbkowanie Monte Carlo).</em>",
+  "disclaimerHtml": "Niniejsza analiza jest udostępniana wyłącznie w celach informacyjnych i edukacyjnych w ramach StrategyQuant X. Nie stanowi porady finansowej, inwestycyjnej ani handlowej. Wszystkie wyniki, w tym backtesty i symulacje, oparte są na danych historycznych oraz hipotetycznych wynikach, które mogą nie odzwierciedlać przyszłych warunków rynkowych. Wyniki osiągnięte w przeszłości nie są gwarancją przyszłych rezultatów. Handel wiąże się ze znacznym ryzykiem, dlatego powinieneś przeprowadzić własne niezależne badania i skonsultować się z licencjonowanym doradcą finansowym przed podjęciem jakichkolwiek decyzji inwestycyjnych lub handlowych. <strong>Narzędzie wykorzystuje obliczenia statystyczne oparte na historycznych sekwencjach; rzeczywiste wykonanie na rynku może istotnie się różnić.</strong>",
+  "noStrategySelected": "Nie wybrano żadnej strategii"
+}
+

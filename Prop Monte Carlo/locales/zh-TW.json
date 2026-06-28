@@ -1,0 +1,24 @@
+{
+  "title": "通過機率分析",
+  "subtitle": "使用蒙特卡洛模擬，估算你的策略通過挑戰的機率。",
+  "parameters": "參數",
+  "startEquity": "初始資金",
+  "winRate": "勝率",
+  "riskPerTrade": "每筆交易風險",
+  "rewardToRisk": "報酬/風險 (R)",
+  "profitTarget": "獲利目標",
+  "maxDrawdown": "最大回撤",
+  "simulations": "模擬次數",
+  "tradesPerSim": "每次模擬交易數",
+  "runSimulation": "執行模擬",
+  "passProbability": "通過機率",
+  "riskOfRuin": "破產風險",
+  "target": "目標",
+  "maxDd": "最大回撤",
+  "start": "開始",
+  "switchTheme": "切換主題",
+  "introTooltipHtml": "StrategyQuant 的蒙特卡洛模擬可協助你估算：在考量策略勝率、報酬/風險比以及每筆交易風險的情況下，你的策略通過 prop firm（自營/考核）挑戰的機率，或是觸及回撤上限（drawdown limit）的機率。<br><br><strong>實際範例：</strong><br>若你的策略勝率為 50%，RRR 為 1:2，並且你每筆交易風險為 1%，目標是在不觸及 10% 回撤的前提下達到 10% 的獲利目標：<ol style=\"margin: 5px 0 0 15px; padding: 0;\"><li>將這些數值填入參數。</li><li>執行模擬（例如 1000 次）。</li><li>如果「通過機率」為 70%，代表在 1000 個被模擬的「宇宙」中，有 700 個宇宙裡，你的策略在觸及回撤上限之前就達到了目標。</li></ol><br><em>備註：這是基於隨機交易序列的統計計算（蒙特卡洛抽樣）。</em>",
+  "disclaimerHtml": "本分析僅在 StrategyQuant X 內提供資訊與教育用途。它不構成任何金融、投資或交易建議。所有結果（包含回測與模擬）皆基於歷史資料與假設性表現，可能無法反映未來的市場狀況。過往表現不代表未來結果。交易涉及重大風險，在做出任何投資或交易決策之前，你應自行進行獨立研究並諮詢持牌金融顧問。 <strong>本工具使用基於歷史序列的統計數學；實際市場執行可能會有顯著差異。</strong>",
+  "noStrategySelected": "未選擇策略"
+}
+

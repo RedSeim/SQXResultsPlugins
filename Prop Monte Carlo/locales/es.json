@@ -1,0 +1,24 @@
+{
+  "title": "Análisis de la Probabilidad de Éxito",
+  "subtitle": "Simulación Monte Carlo de la probabilidad de que tu estrategia supere un reto.",
+  "parameters": "Parámetros",
+  "startEquity": "Capital Inicial",
+  "winRate": "Ratio de Victorias",
+  "riskPerTrade": "Riesgo por Operación",
+  "rewardToRisk": "Recompensa vs Riesgo (R)",
+  "profitTarget": "Objetivo de Beneficio",
+  "maxDrawdown": "Máximo Drawdown",
+  "simulations": "Simulaciones",
+  "tradesPerSim": "Operaciones por Simulación",
+  "runSimulation": "Ejecutar Simulación",
+  "passProbability": "Probabilidad de Éxito",
+  "riskOfRuin": "Riesgo de Ruina",
+  "target": "OBJETIVO",
+  "maxDd": "MAX DD",
+  "start": "INICIO",
+  "switchTheme": "Cambiar Tema",
+  "introTooltipHtml": "La simulación Monte Carlo de StrategyQuant te ayuda a estimar la probabilidad de superar el reto de una prop firm o de alcanzar un límite de drawdown en función del ratio de victorias de tu estrategia, la relación recompensa/riesgo y el riesgo por operación.<br><br><strong>Ejemplo práctico:</strong><br>Si tu estrategia tiene un 50% de ratio de victorias y un RRR 1:2, y arriesgas un 1% por operación para alcanzar un objetivo de beneficio del 10% sin tocar un drawdown del 10%:<ol style=\"margin: 5px 0 0 15px; padding: 0;\"><li>Introduce estos valores en los parámetros.</li><li>Ejecuta la simulación (por ejemplo, 1000 veces).</li><li>Si la 'Probabilidad de Éxito' es 70%, significa que en 700 de 1000 universos simulados, tu estrategia alcanzó el objetivo antes de que se alcanzara el límite de drawdown.</li></ol><br><em>Nota: son cálculos estadísticos basados en secuencias aleatorias de operaciones (muestreo Monte Carlo).</em>",
+  "disclaimerHtml": "Este análisis se proporciona estrictamente con fines informativos y educativos dentro de StrategyQuant X. No constituye asesoramiento financiero, de inversión o de trading. Todos los resultados, incluidas las pruebas retrospectivas (backtests) y las simulaciones, se basan en datos históricos y en rendimiento hipotético, que puede no reflejar las condiciones futuras del mercado. El rendimiento pasado no indica resultados futuros. El trading implica un riesgo sustancial y debes realizar tu propia investigación independiente y consultar con un asesor financiero autorizado antes de tomar cualquier decisión de inversión o trading. <strong>Esta herramienta utiliza matemáticas estadísticas basadas en secuencias históricas; la ejecución real en el mercado puede variar significativamente.</strong>",
+  "noStrategySelected": "Ninguna estrategia seleccionada"
+}
+

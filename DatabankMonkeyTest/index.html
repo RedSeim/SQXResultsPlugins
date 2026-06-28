@@ -1,0 +1,2676 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Databank Monkey Test</title>
+  <script src="./vue.global.prod.js"></script>
+  <style>
+    /* ===================================================================
+       Design System & Variables
+       =================================================================== */
+    :root {
+      --bg-body: #F4F6F9;
+      --bg-surface: #FFFFFF;
+      --bg-panel: #F8F9FA;
+      --bg-input: #FFFFFF;
+      --text-main: #333333;
+      --text-muted: #666666;
+      --border-color: #E0E0E0;
+      --input-border: #CCCCCC;
+      
+      --primary: #337ab7;
+      --primary-hover: #286090;
+      --success: #28a745;
+      --success-bg: rgba(40, 167, 69, 0.1);
+      --danger: #dc3545;
+      --danger-bg: rgba(220, 53, 69, 0.1);
+      --warning: #ffc107;
+      
+      --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      --transition-speed: 0.25s;
+    }
+
+    [data-theme="dark"] {
+      --bg-body: #1e1e1e;
+      --bg-surface: #2d2d2d;
+      --bg-panel: #252525;
+      --bg-input: #383838;
+      --text-main: #e0e0e0;
+      --text-muted: #aaaaaa;
+      --border-color: #444444;
+      --input-border: #555555;
+      
+      --primary: #337ab7;
+      --primary-hover: #4090d0;
+      --success: #28a745;
+      --success-bg: rgba(40, 167, 69, 0.2);
+      --danger: #dc3545;
+      --danger-bg: rgba(220, 53, 69, 0.2);
+      
+      --card-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      font-size: 13px;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: background-color var(--transition-speed), color var(--transition-speed);
+    }
+
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+      padding: 15px;
+    }
+
+    /* ===================================================================
+       Layout Sections
+       =================================================================== */
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-shrink: 0;
+    }
+
+    .header-bar h1 {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .header-bar p {
+      color: var(--text-muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .app-container {
+      display: flex;
+      gap: 15px;
+      flex-grow: 1;
+      min-height: 0;
+    }
+
+    /* Sidebar Controls */
+    .sidebar {
+      width: 300px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      padding: 12px 15px;
+      border-bottom: 1px solid var(--border-color);
+      background: rgba(0, 0, 0, 0.02);
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    [data-theme="dark"] .sidebar-header {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .sidebar-content {
+      padding: 15px;
+      overflow-y: auto;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Main Area containing Tabs */
+    .main-viewport {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      box-shadow: var(--card-shadow);
+      overflow: hidden;
+    }
+
+    /* ===================================================================
+       UI Components
+       =================================================================== */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-group label {
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 6px 10px;
+      border: 1px solid var(--input-border);
+      border-radius: 3px;
+      background-color: var(--bg-input);
+      color: var(--text-main);
+      font-size: 13px;
+      transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    /* CSV Upload Box */
+    .upload-box {
+      border: 2px dashed var(--input-border);
+      border-radius: 4px;
+      padding: 15px;
+      text-align: center;
+      cursor: pointer;
+      background: var(--bg-panel);
+      transition: background 0.2s, border-color 0.2s;
+      position: relative;
+    }
+
+    .upload-box:hover {
+      border-color: var(--primary);
+      background: rgba(51, 122, 183, 0.05);
+    }
+
+    .upload-box input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .upload-box .icon {
+      font-size: 24px;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    .upload-box-success {
+      border-color: var(--success);
+      background: var(--success-bg);
+      color: var(--text-main);
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .upload-box-success button {
+      background: none;
+      border: none;
+      color: var(--danger);
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0 5px;
+    }
+
+    /* Tabs Navigation */
+    .tab-bar {
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+      background: rgba(0, 0, 0, 0.01);
+      flex-shrink: 0;
+    }
+
+    .tab-item {
+      padding: 10px 20px;
+      cursor: pointer;
+      font-weight: 500;
+      border-right: 1px solid var(--border-color);
+      transition: background 0.2s, color 0.2s;
+      color: var(--text-muted);
+    }
+
+    .tab-item.active {
+      background: var(--bg-surface);
+      color: var(--primary);
+      border-bottom: 2px solid var(--primary);
+      font-weight: 600;
+    }
+
+    /* Tab Content View */
+    .tab-pane {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      min-height: 0;
+      overflow: hidden;
+      padding: 15px;
+    }
+
+    /* KPI Summary cards */
+    .kpi-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+      flex-shrink: 0;
+    }
+
+    .kpi-card {
+      flex: 1;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+    }
+
+    .kpi-chart-box {
+      width: 50px;
+      height: 50px;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .kpi-card-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .kpi-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .kpi-val {
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    /* Grid layout for Dashboard and charts */
+    .dashboard-grid {
+      display: flex;
+      gap: 15px;
+      flex-grow: 1;
+      min-height: 0;
+    }
+
+    .results-table-box {
+      flex: 1.2;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-surface);
+    }
+
+    .table-header {
+      background: rgba(0, 0, 0, 0.02);
+      border-bottom: 1px solid var(--border-color);
+      padding: 8px 12px;
+      font-weight: bold;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    [data-theme="dark"] .table-header {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .table-scroll {
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: var(--bg-panel);
+      padding: 8px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-color);
+      z-index: 10;
+    }
+
+    td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 12px;
+    }
+
+    tr:hover td {
+      background: rgba(51, 122, 183, 0.04);
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      font-size: 10px;
+      font-weight: bold;
+      border-radius: 3px;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .badge-success { background: var(--success); color: white; }
+    .badge-danger { background: var(--danger); color: white; }
+    .badge-warning { background: var(--warning); color: #333; }
+
+    /* Button styles */
+    .btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      text-align: center;
+      cursor: pointer;
+      border: 1px solid transparent;
+      border-radius: 3px;
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    .btn-primary {
+      color: white;
+      background-color: var(--primary);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      color: var(--text-main);
+      background-color: var(--bg-surface);
+      border-color: var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--border-color);
+    }
+
+    .btn-sm {
+      padding: 3px 8px;
+      font-size: 11px;
+      border-radius: 2px;
+    }
+
+    /* Detail / Inspector Panel */
+    .detail-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      min-width: 0;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+
+    .chart-card {
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 12px;
+      background: var(--bg-panel);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .chart-card h4 {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .canvas-container {
+      position: relative;
+      height: 180px;
+      width: 100%;
+    }
+
+    .canvas-container canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .no-data-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-align: center;
+      padding: 20px;
+    }
+
+    /* Disclaimer Footer */
+    .disclaimer {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-color);
+      font-size: 10px;
+      color: var(--text-muted);
+      line-height: 1.4;
+      text-align: justify;
+      flex-shrink: 0;
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #888; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+    /* Button Danger */
+    .btn-danger {
+      color: white;
+      background-color: var(--danger);
+    }
+    .btn-danger:hover {
+      background-color: #c82333;
+    }
+
+    /* Progress Bar */
+    .progress-container {
+      margin-top: 10px;
+      margin-bottom: 10px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      padding: 10px;
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      font-size: 11px;
+      color: var(--text-main);
+    }
+
+    .progress-bar-track {
+      height: 8px;
+      background: var(--border-color);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary) 0%, #4a90e2 100%);
+      border-radius: 4px;
+      transition: width 0.2s ease-out;
+      background-size: 30px 30px;
+      background-image: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.15) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgba(255, 255, 255, 0.15) 50%,
+        rgba(255, 255, 255, 0.15) 75%,
+        transparent 75%,
+        transparent
+      );
+      animation: barStripes 1s linear infinite;
+    }
+
+    .progress-subtext {
+      font-size: 10px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    @keyframes barStripes {
+      from { background-position: 0 0; }
+      to { background-position: 30px 0; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <div class="header-bar">
+      <div>
+        <h1>{{ t('title') }}</h1>
+        <p>{{ t('subtitle') }}</p>
+      </div>
+      <div>
+        <span class="badge" :class="priceData.length > 0 ? 'badge-success' : 'badge-danger'">
+          {{ priceData.length > 0 ? t('priceCsvLoaded', { count: priceData.length }) : t('noCsvUploaded') }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="app-container">
+      <!-- Sidebar Control Panel -->
+      <div class="sidebar">
+        <div class="sidebar-header">{{ t('parameters') }}</div>
+        <div class="sidebar-content">
+          <!-- Error banner -->
+          <div v-if="errorMessage" style="background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger); padding: 8px 10px; border-radius: 4px; font-size: 11px; line-height: 1.3; margin-bottom: 12px; word-break: break-all;">
+            <strong>Error:</strong> {{ errorMessage }}
+          </div>
+          <!-- Price CSV upload -->
+          <div class="form-group">
+            <label>{{ t('priceCsvLabel') }}</label>
+            <div v-if="priceData.length === 0" class="upload-box">
+              <span class="icon">📈</span>
+              <span style="font-size: 11px;">{{ t('priceCsvDropText') }}</span>
+              <input type="file" accept=".csv" @change="loadPriceCSV">
+            </div>
+            <div v-else class="upload-box-success">
+              <span>CSV ({{ priceData.length }} bars)</span>
+              <button @click="clearPriceData">×</button>
+            </div>
+          </div>
+
+          <!-- Bulk Trades CSV upload -->
+          <div class="form-group">
+            <label>{{ t('bulkCsvLabel') }}</label>
+            <div class="upload-box" :class="{ 'upload-box-success': bulkStrategies.length > 0 }">
+              <div v-if="bulkStrategies.length === 0">
+                <span class="icon">📁</span>
+                <span style="font-size: 11px;">{{ t('bulkCsvDropText') }}</span>
+              </div>
+              <div v-else style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <span style="font-size: 12px;">Loaded: {{ bulkStrategies.length }} strategies</span>
+                <button @click="clearBulkData" class="btn btn-sm btn-danger">Clear</button>
+              </div>
+              <input type="file" accept=".csv" multiple @change="loadBulkCSV">
+            </div>
+          </div>
+
+          <!-- Period selector -->
+          <div class="form-group">
+            <label>{{ t('periodLabel') }}</label>
+            <select class="form-control" v-model="settings.period" @change="onSettingsChange">
+              <option value="Full">{{ t('periodFull') }}</option>
+              <option value="IS">{{ t('periodIS') }}</option>
+              <option value="OOS">{{ t('periodOOS') }}</option>
+            </select>
+          </div>
+
+          <!-- MM Selector -->
+          <div class="form-group">
+            <label>{{ t('mmLabel') }}</label>
+            <select class="form-control" v-model="settings.mmMode" @change="onSettingsChange">
+              <option value="Fixed">{{ t('mmFixed') }}</option>
+              <option value="Compounding">{{ t('mmCompounding') }}</option>
+            </select>
+          </div>
+
+          <!-- Simulated Monkeys -->
+          <div class="form-group">
+            <label>{{ t('numMonkeys') }}: {{ settings.numMonkeys }}</label>
+            <input type="range" class="form-control" min="100" max="1000" step="50" v-model.number="settings.numMonkeys" @change="onSettingsChange">
+          </div>
+
+          <!-- Percentile -->
+          <div class="form-group">
+            <label>{{ t('percentile') }}: {{ settings.percentile }}%</label>
+            <input type="range" class="form-control" min="90" max="99.9" step="0.5" v-model.number="settings.percentile" @change="onSettingsChange">
+          </div>
+
+          <!-- Progress bar -->
+          <div v-if="isCalculating" class="progress-container">
+            <div class="progress-header">
+              <span>{{ t('calculating') }}</span>
+              <span>{{ progress }}%</span>
+            </div>
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill" :style="{ width: progress + '%' }"></div>
+            </div>
+            <span class="progress-subtext" v-if="currentProcessingName">{{ t('processing', { name: currentProcessingName }) }}</span>
+          </div>
+
+          <!-- Run / Cancel test btn -->
+          <button v-if="!isCalculating" class="btn btn-primary" :disabled="priceData.length === 0 || (activeStrategy === null && bulkStrategies.length === 0)" @click="runTestOnAll">
+            {{ t('runTest') }}
+          </button>
+          <button v-else class="btn btn-danger" @click="cancelCalculation">
+            {{ t('cancel') }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Visual Viewport -->
+      <div class="main-viewport">
+        <div class="tab-bar">
+          <div class="tab-item" :class="{ active: currentTab === 'active' }" @click="currentTab = 'active'">
+            {{ t('activeStrategyTab') }}
+          </div>
+          <div class="tab-item" :class="{ active: currentTab === 'bulk' }" @click="currentTab = 'bulk'">
+            {{ t('bulkTestTab') }}
+          </div>
+        </div>
+
+        <!-- TAB CONTENT: ACTIVE STRATEGY -->
+        <div class="tab-pane" v-show="currentTab === 'active'">
+          <div class="kpi-row" v-if="activeResult">
+            <div class="kpi-card" style="position: relative;">
+              <div class="kpi-chart-box">
+                <canvas ref="activeMiniPie"></canvas>
+              </div>
+              <div class="kpi-card-content" style="padding-right: 50px;">
+                <div class="kpi-label">{{ activeResult.name }}</div>
+                <div class="kpi-val" :class="activeResult.status === 'PASSED' ? 'text-success' : 'text-danger'">
+                  {{ t(activeResult.status.toLowerCase()) }}
+                </div>
+              </div>
+              <button class="btn btn-secondary btn-sm" style="position: absolute; right: 10px; top: 10px;" @click="exportMonkeyData(activeResult)">
+                {{ t('dataBtn') }}
+              </button>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-card-content">
+                <div class="kpi-label">Z-Score</div>
+                <div class="kpi-val">{{ activeResult.zScore.toFixed(2) }} &sigma;</div>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-card-content">
+                <div class="kpi-label">{{ t('realProfit') }}</div>
+                <div class="kpi-val">${{ activeResult.realReturn.toFixed(2) }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <!-- Active charts -->
+            <div class="detail-panel" v-if="activeResult">
+              <div class="chart-card">
+                <h4>{{ t('bellCurveTitle') }}</h4>
+                <div class="canvas-container" ref="activeBellContainer">
+                  <canvas ref="activeBellCanvas"></canvas>
+                </div>
+              </div>
+              <div class="chart-card">
+                <h4>{{ t('equityCurveTitle') }}</h4>
+                <div class="canvas-container" ref="activeEquityContainer">
+                  <canvas ref="activeEquityCanvas"></canvas>
+                </div>
+              </div>
+            </div>
+            <div v-else class="no-data-placeholder">
+              {{ t('noStrategySelected') }}
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB CONTENT: BULK TEST -->
+        <div class="tab-pane" v-show="currentTab === 'bulk'">
+          <!-- Overall Stats -->
+          <div class="kpi-row" v-if="bulkResults.length > 0">
+            <div class="kpi-card">
+              <div class="kpi-chart-box">
+                <canvas ref="bulkPieChartCanvas"></canvas>
+              </div>
+              <div class="kpi-card-content">
+                <div class="kpi-label">{{ t('passRate') }}</div>
+                <div class="kpi-val">{{ passRate }}%</div>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-card-content">
+                <div class="kpi-label">{{ t('testedStrategies') }}</div>
+                <div class="kpi-val">{{ bulkResults.length }}</div>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-card-content">
+                <div class="kpi-label">{{ t('avgZScore') }}</div>
+                <div class="kpi-val">{{ avgZScore.toFixed(2) }} &sigma;</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <!-- Results list -->
+            <div class="results-table-box">
+              <div class="table-header">
+                <span>{{ t('strategiesGrid') }}</span>
+              </div>
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>{{ t('stratName') }}</th>
+                      <th>{{ t('period') }}</th>
+                      <th>{{ t('realProfit') }}</th>
+                      <th>{{ t('monkeyThreshold') }}</th>
+                      <th>{{ t('monkeyTestResult') }}</th>
+                      <th>{{ t('zScore') }}</th>
+                      <th>{{ t('status') }}</th>
+                      <th>{{ t('action') }}</th>
+                      <th>{{ t('dataExport') }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="res in bulkResults" :key="res.name">
+                      <td><strong>{{ res.name }}</strong></td>
+                      <td>{{ res.period }}</td>
+                      <td>${{ res.realReturn.toFixed(2) }}</td>
+                      <td>${{ res.monkeyThreshold.toFixed(2) }}</td>
+                      <td>{{ res.rankPercentile.toFixed(1) }}%</td>
+                      <td>{{ res.zScore.toFixed(2) }} &sigma;</td>
+                      <td>
+                        <span class="badge" :class="res.status === 'PASSED' ? 'badge-success' : (res.status === 'LOW TRADES' ? 'badge-warning' : 'badge-danger')">
+                          {{ t(res.status.toLowerCase().replace(' ', '')) }}
+                        </span>
+                      </td>
+                      <td>
+                        <button class="btn btn-primary btn-sm" @click="inspectBulkStrategy(res)">
+                          {{ t('inspect') }}
+                        </button>
+                      </td>
+                      <td>
+                        <button class="btn btn-secondary btn-sm" @click="exportMonkeyData(res)">
+                          {{ t('dataBtn') }}
+                        </button>
+                      </td>
+                    </tr>
+                    <tr v-if="bulkResults.length === 0">
+                      <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                        No bulk strategies tested yet. Upload a Bulk Trades CSV and click Run Monkey Test.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Inspect detail side panel -->
+            <div class="detail-panel" v-if="inspectedStrategy">
+              <h3 style="font-size: 15px; font-weight: bold; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
+                {{ inspectedStrategy.name }}
+              </h3>
+              <div class="chart-card">
+                <h4>{{ t('bellCurveTitle') }}</h4>
+                <div class="canvas-container" ref="bulkBellContainer">
+                  <canvas ref="bulkBellCanvas"></canvas>
+                </div>
+              </div>
+              <div class="chart-card">
+                <h4>{{ t('equityCurveTitle') }}</h4>
+                <div class="canvas-container" ref="bulkEquityContainer">
+                  <canvas ref="bulkEquityCanvas"></canvas>
+                </div>
+              </div>
+            </div>
+            <div v-else-if="bulkResults.length > 0" class="detail-panel" style="justify-content: center; align-items: center; border: 1px dashed var(--border-color); border-radius: 4px; background: var(--bg-panel);">
+              <span style="color: var(--text-muted);">Select a strategy in the table to inspect details</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pinned Footer Disclaimer -->
+    <div class="disclaimer" v-html="tHtml('disclaimerHtml')"></div>
+  </div>
+
+  <!-- Main logic -->
+  <script>
+    const { createApp, ref, reactive, computed, onMounted, nextTick } = Vue;
+
+    const messages = reactive({});
+    const loadedLocales = new Set();
+
+    // Async locale file fetcher
+    async function loadLocale(localeKey) {
+      if (!localeKey || loadedLocales.has(localeKey)) return;
+      try {
+        const resp = await fetch(`./locales/${localeKey}.json`, { credentials: 'same-origin' });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        messages[localeKey] = await resp.json();
+        loadedLocales.add(localeKey);
+      } catch (e) {
+        if (localeKey !== 'en') await loadLocale('en');
+      }
+    }
+
+    const LOCALES = {
+      en: {
+        "title": "Databank Monkey Test",
+        "subtitle": "Robustness validation comparing strategy performance against random time-shifted entries.",
+        "parameters": "Test Parameters",
+        "priceCsvLabel": "Historical Price CSV (OHLC)",
+        "priceCsvDropText": "Drag & drop Price CSV here or click to browse",
+        "priceCsvLoaded": "Price data loaded successfully ({count} bars)",
+        "bulkCsvLabel": "Bulk Trades CSV (Optional)",
+        "bulkCsvDropText": "Drag & drop Bulk Databank Trades CSV here or click to browse",
+        "bulkCsvLoaded": "Bulk trades parsed successfully ({count} strategies)",
+        "periodLabel": "Evaluation Period",
+        "periodFull": "Full Period (IS + OOS)",
+        "periodIS": "In-Sample (IS) Only",
+        "periodOOS": "Out-of-Sample (OOS) Only",
+        "mmLabel": "Money Management Mode",
+        "mmFixed": "Fixed Amount (Price-Corrected)",
+        "mmCompounding": "Proportional Risk (Compounding)",
+        "numMonkeys": "Simulated Monkeys",
+        "percentile": "Passing Percentile",
+        "runTest": "Run Monkey Test",
+        "overallStats": "Overall Databank Stats",
+        "passRate": "Databank Pass Rate",
+        "testedStrategies": "Strategies Tested",
+        "avgZScore": "Average Z-Score",
+        "strategiesGrid": "Tested Strategies List",
+        "stratName": "Strategy Name",
+        "period": "Period",
+        "realProfit": "Real Profit",
+        "monkeyThreshold": "Monkey Threshold",
+        "monkeyTestResult": "Monkey Test Result",
+        "zScore": "Z-Score",
+        "status": "Status",
+        "action": "Action",
+        "inspect": "Inspect",
+        "dataExport": "Data Export",
+        "dataBtn": "Data",
+        "detailsTitle": "Strategy Detailed Analysis (Rayos X)",
+        "bellCurveTitle": "Performance Distribution (Gaussian Bell Curve)",
+        "equityCurveTitle": "Equity Curve Comparison (Strategy vs Monkeys)",
+        "passed": "PASSED",
+        "failed": "FAILED",
+        "insufficientTrades": "LOW TRADES",
+        "noCsvUploaded": "Please upload the historical price CSV file first.",
+        "noStrategySelected": "No strategy selected. Click on a strategy in your SQX Databank or select one from the list.",
+        "activeStrategyLabel": "Active SQX Strategy",
+        "bulkTestTab": "Bulk Databank Test",
+        "activeStrategyTab": "Active Strategy Test",
+        "uploadSectionTitle": "CSV Data Loading",
+        "disclaimerHtml": "This analysis is provided strictly for informational and educational purposes within StrategyQuant X. It does not constitute financial, investment, or trading advice. All results, including backtests and simulations, are based on historical data and hypothetical performance, which may not reflect future market conditions. Past performance is not indicative of future results. Trading involves substantial risk, and you should conduct your own independent research and consult a licensed financial advisor before making any investment or trading decisions. <strong>This tool utilizes statistical math based on historical sequences; actual market execution may vary significantly.</strong>",
+        "calculating": "Calculating...",
+        "cancel": "Cancel",
+        "processing": "Processing: {name}"
+      },
+      es: {
+        "title": "Test del Mono del Databank",
+        "subtitle": "Validación de robustez estadística comparando la estrategia contra entradas aleatorias desplazadas en el tiempo.",
+        "parameters": "Parámetros del Test",
+        "priceCsvLabel": "CSV de Precios Históricos (OHLC)",
+        "priceCsvDropText": "Arrastra el CSV de precios aquí o haz clic para buscar",
+        "priceCsvLoaded": "Datos de precios cargados con éxito ({count} velas)",
+        "bulkCsvLabel": "CSV de Operaciones Masivas (Opcional)",
+        "bulkCsvDropText": "Arrastra el CSV de operaciones masivas aquí o haz clic para buscar",
+        "bulkCsvLoaded": "Operaciones procesadas con éxito ({count} estrategias)",
+        "periodLabel": "Periodo de Evaluación",
+        "periodFull": "Periodo Completo (IS + OOS)",
+        "periodIS": "Solo In-Sample (IS)",
+        "periodOOS": "Solo Out-of-Sample (OOS)",
+        "mmLabel": "Gestión Monetaria (MM)",
+        "mmFixed": "Monto Fijo (Corregido por Precio)",
+        "mmCompounding": "Riesgo Proporcional (Interés Compuesto)",
+        "numMonkeys": "Monos Simulados",
+        "percentile": "Percentil de Aprobación",
+        "runTest": "Ejecutar Test del Mono",
+        "overallStats": "Estadísticas Globales del Databank",
+        "passRate": "Tasa de Aprobación",
+        "testedStrategies": "Estrategias Evaluadas",
+        "avgZScore": "Z-Score Promedio",
+        "strategiesGrid": "Listado de Estrategias Evaluadas",
+        "stratName": "Nombre Estrategia",
+        "period": "Periodo",
+        "realProfit": "Retorno Real",
+        "monkeyThreshold": "Límite Monkey",
+        "monkeyTestResult": "Resultado Monkey Test",
+        "zScore": "Z-Score",
+        "status": "Resultado",
+        "action": "Acción",
+        "inspect": "Inspeccionar",
+        "dataExport": "Exportar Datos",
+        "dataBtn": "Datos",
+        "detailsTitle": "Análisis Detallado de Estrategia (Rayos X)",
+        "bellCurveTitle": "Distribución de Rendimientos (Campana de Gauss)",
+        "equityCurveTitle": "Comparativa de Curvas de Equities (Estrategia vs Monos)",
+        "passed": "APROBADA",
+        "failed": "FALLIDA",
+        "insufficientTrades": "POCOS TRADES",
+        "noCsvUploaded": "Por favor, carga primero el archivo CSV de precios históricos.",
+        "noStrategySelected": "Ninguna estrategia seleccionada. Haz clic en una estrategia en tu Databank de SQX o selecciónala del listado.",
+        "activeStrategyLabel": "Estrategia Activa SQX",
+        "bulkTestTab": "Test Masivo (Bulk)",
+        "activeStrategyTab": "Test Estrategia Activa",
+        "uploadSectionTitle": "Carga de Datos CSV",
+        "disclaimerHtml": "Este análisis se proporciona estrictamente con fines informativos y educativos dentro de StrategyQuant X. No constituye asesoramiento financiero, de inversión o de trading. Todos los resultados, incluidos los backtests y las simulaciones, se basan en datos históricos y rendimiento hipotético, que pueden no reflejar las condiciones futuras del mercado. El rendimiento pasado no es indicativo de resultados futuros. Operar implica un riesgo sustancial, y debe realizar su propia investigación independiente y consultar a un asesor financiero con licencia antes de tomar cualquier decisión de inversión o trading. <strong>Esta herramienta utiliza matemáticas estadísticas basadas en secuencias históricas; la ejecución real del mercado puede variar significativamente.</strong>",
+        "calculating": "Calculando...",
+        "cancel": "Cancelar",
+        "processing": "Procesando: {name}"
+      }
+    };
+
+    createApp({
+      setup() {
+        const theme = ref('light');
+        const lang = ref('en');
+        const localeVersion = ref(0);
+        const currentTab = ref('active');
+        const errorMessage = ref('');
+        const csvSeparator = ref(';');
+
+        // Settings
+        const settings = reactive({
+          period: 'Full', // Full, IS, OOS
+          mmMode: 'Fixed', // Fixed, Compounding
+          numMonkeys: 500,
+          percentile: 95.0
+        });
+
+        // Prices & Trades cache
+        const priceData = ref([]); // array of { time, open, high, low, close }
+        const timeMap = ref(new Map());
+        
+        // Active Strategy
+        const activeStrategy = ref(null); // original trade data from SQX
+        const activeResult = ref(null); // calculated monkey simulation outcome for active strategy
+
+        // Bulk strategies
+        const bulkStrategies = ref([]); // parsed bulk file strategylist: array of { name, trades: [] }
+        const bulkResults = ref([]); // results list of bulk strategies
+
+        const inspectedStrategy = ref(null);
+
+        // Web Worker states
+        const isCalculatingActive = ref(false);
+        const isCalculatingBulk = ref(false);
+        const isCalculating = computed(() => isCalculatingActive.value || isCalculatingBulk.value);
+        const progress = ref(0);
+        const currentProcessingName = ref('');
+        let activeWorker = null;
+        let bulkWorker = null;
+
+        // Canvas element refs
+        const activeBellCanvas = ref(null);
+        const activeEquityCanvas = ref(null);
+        const activeMiniPie = ref(null);
+        const activeBellContainer = ref(null);
+        const activeEquityContainer = ref(null);
+
+        const bulkBellCanvas = ref(null);
+        const bulkEquityCanvas = ref(null);
+        const bulkPieChartCanvas = ref(null);
+        const bulkBellContainer = ref(null);
+        const bulkEquityContainer = ref(null);
+
+        const t = (key, params = {}) => {
+          localeVersion.value;
+          let msg = messages[lang.value]?.[key] || LOCALES[lang.value]?.[key] || messages.en?.[key] || LOCALES.en?.[key] || key;
+          for (let p in params) {
+            msg = msg.replace(`{${p}}`, params[p]);
+          }
+          return msg;
+        };
+
+        const tHtml = (key) => t(key);
+
+        // ===================================================================
+        // Helper and Date parsing functions
+        // ===================================================================
+        function detectSeparator(headerLine) {
+          if (!headerLine) return ',';
+          if (headerLine.includes(';')) return ';';
+          if (headerLine.includes('\t')) return '\t';
+          return ',';
+        }
+
+        function parseValFloat(val) {
+          if (val === undefined || val === null) return 0.0;
+          let s = String(val).trim();
+          s = s.replace(',', '.');
+          let parsed = parseFloat(s);
+          return isNaN(parsed) ? 0.0 : parsed;
+        }
+
+        function parseDate(str) {
+          if (!str) return 0;
+          let s = String(str).trim();
+          
+          // Try timestamp first
+          if (/^\d{10,13}$/.test(s)) {
+            let t = parseInt(s);
+            return t < 10000000000 ? t * 1000 : t;
+          }
+
+          // Format YYYYMMDD HH:mm:ss (compact date with time)
+          let mCompactTime = s.match(/^(\d{4})(\d{2})(\d{2})\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?/);
+          if (mCompactTime) {
+            let y = parseInt(mCompactTime[1]), mon = parseInt(mCompactTime[2]) - 1, d = parseInt(mCompactTime[3]);
+            let h = parseInt(mCompactTime[4]);
+            let min = parseInt(mCompactTime[5]);
+            let sec = mCompactTime[6] ? parseInt(mCompactTime[6]) : 0;
+            return new Date(y, mon, d, h, min, sec).getTime();
+          }
+
+          // Compact format YYYYMMDD
+          if (/^\d{8}$/.test(s)) {
+            let y = parseInt(s.substring(0, 4)), mon = parseInt(s.substring(4, 6)) - 1, d = parseInt(s.substring(6, 8));
+            return new Date(y, mon, d).getTime();
+          }
+
+          // Compact format YYYYMMDDHHMMSS
+          if (/^\d{14}$/.test(s)) {
+            let y = parseInt(s.substring(0, 4)), mon = parseInt(s.substring(4, 6)) - 1, d = parseInt(s.substring(6, 8));
+            let h = parseInt(s.substring(8, 10)), min = parseInt(s.substring(10, 12)), sec = parseInt(s.substring(12, 14));
+            return new Date(y, mon, d, h, min, sec).getTime();
+          }
+
+          // Format yyyy.MM.dd HH:mm
+          let m = s.match(/^(\d{4})[\.\-/](\d{1,2})[\.\-/](\d{1,2})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);
+          if (m) {
+            let y = parseInt(m[1]), mon = parseInt(m[2]) - 1, d = parseInt(m[3]);
+            let h = m[4] ? parseInt(m[4]) : 0;
+            let min = m[5] ? parseInt(m[5]) : 0;
+            let sec = m[6] ? parseInt(m[6]) : 0;
+            return new Date(y, mon, d, h, min, sec).getTime();
+          }
+
+          // Format dd.MM.yyyy HH:mm
+          m = s.match(/^(\d{1,2})[\.\-/](\d{1,2})[\.\-/](\d{4})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);
+          if (m) {
+            let d = parseInt(m[1]), mon = parseInt(m[2]) - 1, y = parseInt(m[3]);
+            let h = m[4] ? parseInt(m[4]) : 0;
+            let min = m[5] ? parseInt(m[5]) : 0;
+            let sec = m[6] ? parseInt(m[6]) : 0;
+            return new Date(y, mon, d, h, min, sec).getTime();
+          }
+
+          let parsed = Date.parse(s);
+          return isNaN(parsed) ? 0 : parsed;
+        }
+
+        // Infer the candle timeframe (ms) from the loaded price data, as the median gap
+        // between consecutive bars. Robust to occasional gaps (weekends/holidays).
+        function inferTimeframeMs(bars) {
+          const diffs = [];
+          for (let i = 1; i < Math.min(bars.length, 500); i++) {
+            const d = bars[i].time - bars[i - 1].time;
+            if (d > 0) diffs.push(d);
+          }
+          if (!diffs.length) return 60000; // fallback: M1
+          diffs.sort((a, b) => a - b);
+          return diffs[Math.floor(diffs.length / 2)];
+        }
+
+        // Number of candles an original trade was open, derived from its real duration
+        // (CloseTime - OpenTime) and the price-data timeframe. This is the holding window
+        // (MaxBars) the monkey replicates: it preserves time-in-market and lets SL/TP be
+        // reached, while bar/time-based exits (End Of Friday, exit-after-X-bars, no SL/TP)
+        // are reproduced by holding the same number of bars and exiting at market.
+        // Falls back to the parsed BarsInTrade field (ORDERS_RESPONSE path) when timestamps
+        // are unavailable. Capped to keep the path simulation bounded.
+        function holdingBars(origTrade, tfMs) {
+          const dur = origTrade.CloseTime - origTrade.OpenTime;
+          if (dur > 0 && tfMs > 0) {
+            return Math.min(5000, Math.max(1, Math.round(dur / tfMs)));
+          }
+          return origTrade.BarsInTrade || 4;
+        }
+
+        // Binary search closest candle index
+        function findCandleIndex(time) {
+          if (timeMap.value.has(time)) return timeMap.value.get(time);
+          let candles = priceData.value;
+          if (candles.length === 0) return -1;
+          
+          let low = 0, high = candles.length - 1;
+          let bestIdx = -1;
+          while (low <= high) {
+            let mid = (low + high) >> 1;
+            let cTime = candles[mid].time;
+            if (cTime === time) return mid;
+            if (cTime < time) {
+              bestIdx = mid;
+              low = mid + 1;
+            } else {
+              high = mid - 1;
+            }
+          }
+          return bestIdx;
+        }
+
+        // ===================================================================
+        // CSV Parsing functions
+        // ===================================================================
+        const loadPriceCSV = (e) => {
+          errorMessage.value = '';
+          const file = e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = function(evt) {
+            try {
+              const text = evt.target.result;
+              const lines = text.split(/\r?\n/);
+              if (lines.length < 2) throw new Error("File is empty or has only one line.");
+
+              // Find delimiter and first non-empty header line
+              let headerLine = "";
+              let headerIdx = 0;
+              for (let i = 0; i < lines.length; i++) {
+                if (lines[i].trim()) {
+                  headerLine = lines[i];
+                  headerIdx = i;
+                  break;
+                }
+              }
+              if (!headerLine) throw new Error("Could not find any non-empty header line.");
+
+              const separator = detectSeparator(headerLine);
+              const headers = headerLine.split(separator).map(h => h.trim().toLowerCase().replace(/^["']|["']$/g, ''));
+              let dateIdx = headers.findIndex(h => h.includes('date') || h.includes('time') || h === 'timestamp');
+              let openIdx = headers.findIndex(h => h === 'open');
+              let highIdx = headers.findIndex(h => h === 'high');
+              let lowIdx = headers.findIndex(h => h === 'low');
+              let closeIdx = headers.findIndex(h => h === 'close');
+
+              // Fallback column positions
+              if (dateIdx === -1) throw new Error("Could not find Date/Time column header in CSV.");
+              if (openIdx === -1) openIdx = 1;
+              if (highIdx === -1) highIdx = 2;
+              if (lowIdx === -1) lowIdx = 3;
+              if (closeIdx === -1) closeIdx = 4;
+
+              const parsed = [];
+              const newTimeMap = new Map();
+              
+              for (let i = headerIdx + 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                const cols = lines[i].split(separator).map(c => c.trim().replace(/^["']|["']$/g, ''));
+                if (cols.length <= Math.max(dateIdx, openIdx, highIdx, lowIdx, closeIdx)) continue;
+                
+                const tVal = parseDate(cols[dateIdx]);
+                if (tVal === 0) continue;
+                
+                const bar = {
+                  time: tVal,
+                  open: parseValFloat(cols[openIdx]),
+                  high: parseValFloat(cols[highIdx]),
+                  low: parseValFloat(cols[lowIdx]),
+                  close: parseValFloat(cols[closeIdx])
+                };
+
+                if (isNaN(bar.open) || isNaN(bar.close)) continue;
+                parsed.push(bar);
+              }
+
+              if (parsed.length === 0) throw new Error("No valid price bars parsed from CSV.");
+
+              // Sort price bars chronologically
+              parsed.sort((a, b) => a.time - b.time);
+              parsed.forEach((bar, idx) => {
+                newTimeMap.set(bar.time, idx);
+              });
+
+              priceData.value = parsed;
+              timeMap.value = newTimeMap;
+              
+              // Run tests automatically if possible
+              if (activeStrategy.value) runActiveStrategyTest();
+            } catch (err) {
+              errorMessage.value = "Price CSV Error: " + err.message;
+              clearPriceData();
+            }
+          };
+          reader.readAsText(file);
+        };
+
+        const clearPriceData = () => {
+          priceData.value = [];
+          timeMap.value.clear();
+          activeResult.value = null;
+          bulkResults.value = [];
+          inspectedStrategy.value = null;
+        };
+
+        const loadBulkCSV = (e) => {
+          errorMessage.value = '';
+          const files = e.target.files;
+          if (!files || files.length === 0) return;
+
+          let processedCount = 0;
+          const accumulatedStrategies = [...bulkStrategies.value]; // Preserve existing strategies
+          const strategiesMap = new Map();
+
+          // Initialize map with existing strategies
+          accumulatedStrategies.forEach(strat => {
+            strategiesMap.set(strat.name, strat.trades);
+          });
+
+          // Process each file
+          for (let fileIdx = 0; fileIdx < files.length; fileIdx++) {
+            const file = files[fileIdx];
+            const reader = new FileReader();
+
+            reader.onload = function(evt) {
+              processedCount++;
+              try {
+                const text = evt.target.result;
+                const lines = text.split(/\r?\n/);
+                if (lines.length < 2) throw new Error(`File "${file.name}": File is empty.`);
+
+                let headerLine = "";
+                let headerIdx = 0;
+                for (let i = 0; i < lines.length; i++) {
+                  if (lines[i].trim()) {
+                    headerLine = lines[i];
+                    headerIdx = i;
+                    break;
+                  }
+                }
+                if (!headerLine) throw new Error(`File "${file.name}": Could not find header line.`);
+
+                const separator = detectSeparator(headerLine);
+                const headers = headerLine.split(separator).map(h => h.trim().toLowerCase().replace(/^["']|["']$/g, ''));
+                const cleanHeaders = headers.map(h => h.replace(/[\s_\-\/]/g, ''));
+
+                const strategyIdx = cleanHeaders.findIndex(h => h.includes('strategy'));
+                const ticketIdx = cleanHeaders.findIndex(h => h === 'ticket');
+                const symbolIdx = cleanHeaders.findIndex(h => h === 'symbol');
+                const typeIdx = cleanHeaders.findIndex(h => h === 'type');
+                const openTimeIdx = cleanHeaders.findIndex(h => h === 'opentime' || h === 'datetime' || h === 'time');
+                const closeTimeIdx = cleanHeaders.findIndex(h => h === 'closetime');
+                const openPriceIdx = cleanHeaders.findIndex(h => h === 'openprice');
+                const closePriceIdx = cleanHeaders.findIndex(h => h === 'closeprice');
+                const slIdx = cleanHeaders.findIndex(h => h.includes('stoploss') || h === 'sl' || h === 'sllevel');
+                const ptIdx = cleanHeaders.findIndex(h => h.includes('profittarget') || h === 'pt' || h === 'tp' || h === 'ptlevel');
+                const sizeIdx = cleanHeaders.findIndex(h => h === 'size' || h === 'lots' || h === 'volume');
+                const barsIdx = cleanHeaders.findIndex(h => h === 'barsintrade' || h === 'bars');
+                const plIdx = cleanHeaders.findIndex(h => h === 'profitloss' || h === 'profit' || h === 'pl');
+                const balanceIdx = cleanHeaders.findIndex(h => h === 'balance');
+                const sampleIdx = cleanHeaders.findIndex(h => h.includes('sample'));
+                const commSwapIdx = cleanHeaders.findIndex(h =>
+                  h === 'commswap' || h === 'commission' ||
+                  ((h.includes('comm') || h.includes('swap')) && !h.includes('comment')));
+                const maeIdx = cleanHeaders.findIndex(h => h === 'mae' || h.includes('mae'));
+                const mfeIdx = cleanHeaders.findIndex(h => h === 'mfe' || h.includes('mfe'));
+                const plPipsIdx = cleanHeaders.findIndex(h => h.includes('profitlosspips') || h.includes('plpips') || h === 'pips');
+
+                if (openTimeIdx === -1) throw new Error(`File "${file.name}": Missing Open Time column.`);
+                if (openPriceIdx === -1) throw new Error(`File "${file.name}": Missing Open Price column.`);
+
+                const fileStrategiesMap = new Map();
+                const lastOpenTimeMap = new Map();
+                const runCounterMap = new Map();
+                const defaultStratName = file.name.replace(/\.csv$/i, '');
+
+                for (let i = headerIdx + 1; i < lines.length; i++) {
+                  if (!lines[i].trim()) continue;
+                  const cols = lines[i].split(separator).map(c => c.trim().replace(/^["']|["']$/g, ''));
+                  if (cols.length < 5) continue;
+
+                  const baseStratName = (strategyIdx !== -1 && cols[strategyIdx]) ? cols[strategyIdx].trim() : defaultStratName;
+
+                  let rawType = typeIdx !== -1 ? cols[typeIdx] : 'buy';
+                  let tradeType = 1;
+                  if (rawType) {
+                    let cleanType = rawType.toLowerCase();
+                    if (cleanType.includes('sell') || cleanType.includes('short') || cleanType === '2') {
+                      tradeType = 2;
+                    } else {
+                      tradeType = 1;
+                    }
+                  }
+
+                  let rawSample = sampleIdx !== -1 ? cols[sampleIdx] : '127';
+                  let sampleVal = 127;
+                  if (rawSample) {
+                    let cleanSample = rawSample.trim().toLowerCase();
+                    if (cleanSample.includes('is') || cleanSample.includes('in-sample') || cleanSample === '10' || cleanSample === 'ist') {
+                      sampleVal = 10;
+                    } else if (cleanSample.includes('oos') || cleanSample.includes('oot') || cleanSample.includes('out-of-sample') || cleanSample === '20') {
+                      sampleVal = 20;
+                    }
+                  }
+
+                  let barsInTrade = 4;
+                  if (barsIdx !== -1) {
+                    let parsedBars = parseInt(cols[barsIdx]);
+                    if (!isNaN(parsedBars) && parsedBars > 0) {
+                      barsInTrade = parsedBars;
+                    }
+                  }
+
+                  const trade = {
+                    Ticket: ticketIdx !== -1 ? cols[ticketIdx].trim() : i,
+                    Symbol: symbolIdx !== -1 ? cols[symbolIdx].trim() : 'Asset',
+                    Type: tradeType,
+                    OpenTime: openTimeIdx !== -1 ? parseDate(cols[openTimeIdx]) : 0,
+                    CloseTime: closeTimeIdx !== -1 ? parseDate(cols[closeTimeIdx]) : 0,
+                    OpenPrice: openPriceIdx !== -1 ? parseValFloat(cols[openPriceIdx]) : 0.0,
+                    ClosePrice: closePriceIdx !== -1 ? parseValFloat(cols[closePriceIdx]) : 0.0,
+                    SLLevel: slIdx !== -1 ? parseValFloat(cols[slIdx]) : 0.0,
+                    PTLevel: ptIdx !== -1 ? parseValFloat(cols[ptIdx]) : 0.0,
+                    Size: sizeIdx !== -1 ? parseValFloat(cols[sizeIdx]) : 0.1,
+                    BarsInTrade: barsInTrade,
+                    ProfitLoss: plIdx !== -1 ? parseValFloat(cols[plIdx]) : 0.0,
+                    Balance: balanceIdx !== -1 ? parseValFloat(cols[balanceIdx]) : 10000.0,
+                    SampleType: sampleVal,
+                    CommSwap: commSwapIdx !== -1 ? parseValFloat(cols[commSwapIdx]) : 0.0,
+                    MAE: maeIdx !== -1 ? parseValFloat(cols[maeIdx]) : 0.0,
+                    MFE: mfeIdx !== -1 ? parseValFloat(cols[mfeIdx]) : 0.0,
+                    ProfitLossPips: plPipsIdx !== -1 ? parseValFloat(cols[plPipsIdx]) : 0.0
+                  };
+
+                  if (isNaN(trade.OpenPrice) || isNaN(trade.ClosePrice) || trade.OpenTime === 0) continue;
+
+                  if (!runCounterMap.has(baseStratName)) {
+                    runCounterMap.set(baseStratName, 1);
+                    lastOpenTimeMap.set(baseStratName, 0);
+                  }
+
+                  let lastTime = lastOpenTimeMap.get(baseStratName);
+                  let currentRun = runCounterMap.get(baseStratName);
+
+                  if (lastTime > 0 && trade.OpenTime < lastTime - 60000) {
+                    currentRun++;
+                    runCounterMap.set(baseStratName, currentRun);
+                  }
+
+                  lastOpenTimeMap.set(baseStratName, trade.OpenTime);
+
+                  if (currentRun > 1) continue;
+
+                  if (!fileStrategiesMap.has(baseStratName)) {
+                    fileStrategiesMap.set(baseStratName, []);
+                  }
+                  fileStrategiesMap.get(baseStratName).push(trade);
+                }
+
+                // Merge file strategies into accumulated map
+                fileStrategiesMap.forEach((trades, name) => {
+                  trades.sort((a, b) => a.OpenTime - b.OpenTime);
+                  if (!strategiesMap.has(name)) {
+                    strategiesMap.set(name, []);
+                  }
+                  strategiesMap.get(name).push(...trades);
+                });
+
+                // Check if all files processed
+                if (processedCount === files.length) {
+                  if (strategiesMap.size === 0) throw new Error("No valid strategies parsed from any file.");
+
+                  const parsedList = [];
+                  strategiesMap.forEach((trades, name) => {
+                    trades.sort((a, b) => a.OpenTime - b.OpenTime);
+                    parsedList.push({ name, trades });
+                  });
+
+                  bulkStrategies.value = parsedList;
+                  bulkResults.value = [];
+                  if (priceData.value.length > 0) {
+                    runBulkTest();
+                  }
+                }
+              } catch (err) {
+                errorMessage.value = "CSV Error: " + err.message;
+              }
+            };
+
+            reader.onerror = () => {
+              errorMessage.value = `Error reading file "${file.name}".`;
+            };
+
+            reader.readAsText(file);
+          }
+        };
+
+        const clearBulkData = () => {
+          bulkStrategies.value = [];
+          bulkResults.value = [];
+          inspectedStrategy.value = null;
+        };
+
+        // ===================================================================
+        // PostMessage integration with StrategyQuantX
+        // ===================================================================
+        const handleMessage = (e) => {
+          const { type, data, theme: nextTheme, language } = e.data;
+          
+          if (type === 'SET_THEME') {
+            theme.value = nextTheme;
+            document.documentElement.setAttribute('data-theme', nextTheme);
+            nextTick(redrawAllCharts);
+          }
+
+          if (type === 'SET_LANGUAGE') {
+            const nextLocale = (typeof language === 'string' ? language : language?.flag || 'en').trim();
+            lang.value = nextLocale;
+            localeVersion.value++;
+            document.documentElement.setAttribute('lang', nextLocale);
+            loadLocale(nextLocale).then(() => {
+              localeVersion.value++;
+            });
+          }
+
+          if (type === 'STRATEGY_DATA') {
+            if (!data?.strategyName) return;
+            // SQX strategy selected: request its order list
+            activeStrategy.value = {
+              name: data.strategyName,
+              projectName: data.projectName,
+              databankName: data.databankName,
+              trades: []
+            };
+            window.parent.postMessage({
+              type: 'GET_ORDERS',
+              params: { resultKey: 'Portfolio', direction: '0', sampleType: '127' }
+            }, '*');
+          }
+
+          if (type === 'ORDERS_RESPONSE') {
+            if (!activeStrategy.value || !data?.orders) return;
+            // Received orders for the active strategy
+            const list = data.orders.map(o => {
+              let tradeType = 1;
+              if (o.Type !== undefined && o.Type !== null) {
+                let sType = String(o.Type).toLowerCase();
+                if (sType.includes('sell') || sType.includes('short') || sType === '2') {
+                  tradeType = 2;
+                }
+              }
+              let sampleVal = 127;
+              if (o.SampleType !== undefined && o.SampleType !== null) {
+                let sSample = String(o.SampleType).toLowerCase();
+                if (sSample.includes('is') || sSample.includes('ist') || sSample === '10') {
+                  sampleVal = 10;
+                } else if (sSample.includes('oos') || sSample.includes('oot') || sSample === '20') {
+                  sampleVal = 20;
+                }
+              }
+              return {
+                Ticket: o.Ticket,
+                Symbol: o.Symbol,
+                Type: tradeType,
+                OpenTime: parseDate(o.OpenTime),
+                CloseTime: parseDate(o.CloseTime),
+                OpenPrice: parseValFloat(o.OpenPrice),
+                ClosePrice: parseValFloat(o.ClosePrice),
+                SLLevel: parseValFloat(o.SLLevel),
+                PTLevel: parseValFloat(o.PTLevel),
+                Size: parseValFloat(o.Size),
+                BarsInTrade: parseInt(o.BarsInTrade) || 4,
+                ProfitLoss: parseValFloat(o.ProfitLoss),
+                Balance: parseValFloat(o.Balance),
+                SampleType: sampleVal,
+                CommSwap: parseValFloat(o.CommSwap),
+                MAE: parseValFloat(o.MAE),
+                MFE: parseValFloat(o.MFE),
+                ProfitLossPips: parseValFloat(o.ProfitLossPips)
+              };
+            });
+            
+            // Sort chronologically
+            list.sort((a, b) => a.OpenTime - b.OpenTime);
+            activeStrategy.value.trades = list;
+
+            if (priceData.value.length > 0) {
+              runActiveStrategyTest();
+            }
+          }
+        };
+
+        // ===================================================================
+        // WEB WORKER GENERATOR AND INITIALIZERS
+        // ===================================================================
+        function getWorkerCode() {
+          return `
+            let priceData = [];
+            let timeMap = new Map();
+
+            function inferTimeframeMs(bars) {
+              const diffs = [];
+              for (let i = 1; i < Math.min(bars.length, 500); i++) {
+                const d = bars[i].time - bars[i - 1].time;
+                if (d > 0) diffs.push(d);
+              }
+              if (!diffs.length) return 60000;
+              diffs.sort((a, b) => a - b);
+              return diffs[Math.floor(diffs.length / 2)];
+            }
+
+            function holdingBars(origTrade, tfMs) {
+              const dur = origTrade.CloseTime - origTrade.OpenTime;
+              if (dur > 0 && tfMs > 0) {
+                return Math.min(5000, Math.max(1, Math.round(dur / tfMs)));
+              }
+              return origTrade.BarsInTrade || 4;
+            }
+
+            function findCandleIndex(time) {
+              if (timeMap.has(time)) return timeMap.get(time);
+              if (priceData.length === 0) return -1;
+              let low = 0, high = priceData.length - 1;
+              let bestIdx = -1;
+              while (low <= high) {
+                let mid = (low + high) >> 1;
+                let cTime = priceData[mid].time;
+                if (cTime === time) return mid;
+                if (cTime < time) {
+                  bestIdx = mid;
+                  low = mid + 1;
+                } else {
+                  high = mid - 1;
+                }
+              }
+              return bestIdx;
+            }
+
+            function runMonkeySimulation(trades, candles, settings) {
+              const numMonkeys = settings.numMonkeys;
+              const percentile = settings.percentile;
+              const tfMs = inferTimeframeMs(candles);
+              const mmMode = settings.mmMode;
+
+              let filterSampleType = null;
+              if (settings.period === 'IS') filterSampleType = 10;
+              if (settings.period === 'OOS') filterSampleType = 20;
+
+              let filteredTrades = trades;
+              if (filterSampleType !== null) {
+                filteredTrades = trades.filter(t => t.SampleType === filterSampleType);
+              }
+
+              if (filteredTrades.length < 5) {
+                return { error: 'LOW TRADES', name: '' };
+              }
+
+              let tMin = Math.min(...filteredTrades.map(t => t.OpenTime));
+              let tMax = Math.max(...filteredTrades.map(t => t.CloseTime));
+              let idxMin = findCandleIndex(tMin);
+              let idxMax = findCandleIndex(tMax);
+
+              if (idxMin === -1 || idxMax === -1 || idxMax <= idxMin) {
+                idxMin = 0;
+                idxMax = candles.length - 1;
+              }
+
+              const M = idxMax - idxMin + 1;
+
+              const alignedTrades = filteredTrades.map(t => {
+                let originalIdx = findCandleIndex(t.OpenTime);
+                if (originalIdx < idxMin || originalIdx > idxMax) {
+                  originalIdx = idxMin + Math.floor((idxMax - idxMin) / 2);
+                }
+                return {
+                  original: t,
+                  t_i: originalIdx,
+                  r_i: originalIdx - idxMin
+                };
+              });
+
+              let realBalance = filteredTrades[0].Balance - filteredTrades[0].ProfitLoss;
+              let realEquity = [realBalance];
+              for (let k = 0; k < filteredTrades.length; k++) {
+                realBalance += filteredTrades[k].ProfitLoss;
+                realEquity.push(realBalance);
+              }
+              let realProfit = realEquity[realEquity.length - 1] - realEquity[0];
+
+              const monkeyProfits = [];
+              const monkeyEquities = [];
+
+              for (let m = 0; m < numMonkeys; m++) {
+                let shift = Math.floor(Math.random() * (M - 1)) + 1;
+                let runningBalance = realEquity[0];
+                let monkeyCurve = [runningBalance];
+
+                for (let k = 0; k < alignedTrades.length; k++) {
+                  let at = alignedTrades[k];
+                  let origTrade = at.original;
+                  
+                  let r_prime = (at.r_i - shift) % M;
+                  if (r_prime < 0) r_prime += M;
+                  let t_prime = idxMin + r_prime;
+
+                  let entryPrice = candles[t_prime].open;
+
+                  let hasSL = origTrade.SLLevel !== null && origTrade.SLLevel > 0 && origTrade.SLLevel !== -99999999 && origTrade.SLLevel !== origTrade.OpenPrice;
+                  let hasTP = origTrade.PTLevel !== null && origTrade.PTLevel > 0 && origTrade.PTLevel !== -99999999 && origTrade.PTLevel !== origTrade.OpenPrice;
+                  
+                  let sl_pct = hasSL ? Math.abs(origTrade.SLLevel - origTrade.OpenPrice) / origTrade.OpenPrice : 0.0;
+                  let tp_pct = hasTP ? Math.abs(origTrade.PTLevel - origTrade.OpenPrice) / origTrade.OpenPrice : 0.0;
+                  let direction = origTrade.Type === 2 ? -1 : 1;
+
+                  let slPrice = null;
+                  let tpPrice = null;
+                  if (hasSL) {
+                    slPrice = direction === 1 ? entryPrice * (1 - sl_pct) : entryPrice * (1 + sl_pct);
+                  }
+                  if (hasTP) {
+                    tpPrice = direction === 1 ? entryPrice * (1 + tp_pct) : entryPrice * (1 - tp_pct);
+                  }
+
+                  let exitPrice = null;
+                  let maxBars = holdingBars(origTrade, tfMs);
+
+                  for (let b = 0; b < maxBars; b++) {
+                    let candleIdx = (t_prime + b) % candles.length;
+                    let c = candles[candleIdx];
+
+                    if (direction === 1) {
+                      if (slPrice !== null && c.low <= slPrice) {
+                        exitPrice = slPrice;
+                        break;
+                      }
+                      if (tpPrice !== null && c.high >= tpPrice) {
+                        exitPrice = tpPrice;
+                        break;
+                      }
+                    } else {
+                      if (slPrice !== null && c.high >= slPrice) {
+                        exitPrice = slPrice;
+                        break;
+                      }
+                      if (tpPrice !== null && c.low <= tpPrice) {
+                        exitPrice = tpPrice;
+                        break;
+                      }
+                    }
+                  }
+
+                  if (exitPrice === null) {
+                    let exitIdx = (t_prime + maxBars) % candles.length;
+                    exitPrice = candles[exitIdx].close;
+                  }
+
+                  let origCommSwap = origTrade.CommSwap || 0.0;
+                  let origPriceDiff = origTrade.ClosePrice - origTrade.OpenPrice;
+                  let grossOrigPL = origTrade.ProfitLoss - origCommSwap;
+                  let pipMult = 0.0;
+                  if (Math.abs(origPriceDiff) > 1e-8) {
+                    pipMult = grossOrigPL / (origTrade.Size * origPriceDiff);
+                  }
+
+                  let origBalanceBefore = origTrade.Balance - origTrade.ProfitLoss;
+                  if (origBalanceBefore <= 0) origBalanceBefore = 10000.0;
+                  
+                  let monkeySize = origTrade.Size;
+                  let priceCorrection = hasSL ? (origTrade.OpenPrice / entryPrice) : 1.0;
+
+                  if (mmMode === 'Compounding') {
+                    let compoundingFactor = runningBalance / origBalanceBefore;
+                    monkeySize = origTrade.Size * compoundingFactor * priceCorrection;
+                  } else {
+                    monkeySize = origTrade.Size * priceCorrection;
+                  }
+
+                  if (monkeySize < 0.01) monkeySize = 0.01;
+
+                  let simPriceDiff = exitPrice - entryPrice;
+                  let grossPL = monkeySize * simPriceDiff * pipMult;
+
+                  let monkeyCommSwap = (origTrade.Size > 1e-9)
+                    ? (origCommSwap / origTrade.Size) * monkeySize
+                    : 0.0;
+
+                  let tradePL = grossPL + monkeyCommSwap;
+
+                  runningBalance += tradePL;
+                  monkeyCurve.push(runningBalance);
+                }
+
+                monkeyProfits.push(runningBalance - monkeyCurve[0]);
+                if (m < 50) {
+                  monkeyEquities.push(monkeyCurve);
+                }
+              }
+
+              monkeyProfits.sort((a, b) => a - b);
+              let meanMonkey = monkeyProfits.reduce((s, x) => s + x, 0) / numMonkeys;
+              let variance = monkeyProfits.reduce((s, x) => s + Math.pow(x - meanMonkey, 2), 0) / (numMonkeys - 1);
+              let stdMonkey = Math.sqrt(variance);
+
+              let zScore = stdMonkey > 0 ? (realProfit - meanMonkey) / stdMonkey : 0.0;
+              let thresholdVal = monkeyProfits[Math.floor(numMonkeys * (percentile / 100))];
+
+              let beatenCount = monkeyProfits.filter(p => realProfit > p).length;
+              let rankPercentile = (beatenCount / numMonkeys) * 100;
+
+              let status = 'FAILED';
+              if (filteredTrades.length < 20) {
+                status = 'LOW TRADES';
+              } else if (realProfit > thresholdVal) {
+                status = 'PASSED';
+              }
+
+              return {
+                realReturn: realProfit,
+                monkeyThreshold: thresholdVal,
+                meanMonkey,
+                stdMonkey,
+                zScore,
+                rankPercentile,
+                status,
+                monkeyProfits,
+                monkeyEquities,
+                realEquity,
+                period: settings.period
+              };
+            }
+
+            self.onmessage = function(e) {
+              const { type, settings, priceData: incomingPriceData, strategy, strategies } = e.data;
+
+              if (incomingPriceData) {
+                priceData = incomingPriceData;
+                timeMap.clear();
+                priceData.forEach((bar, idx) => {
+                  timeMap.set(bar.time, idx);
+                });
+              }
+
+              if (type === 'START_SINGLE') {
+                try {
+                  const res = runMonkeySimulation(strategy.trades, priceData, settings);
+                  self.postMessage({ type: 'COMPLETE_SINGLE', result: res });
+                } catch (err) {
+                  self.postMessage({ type: 'ERROR', message: err.message });
+                }
+              }
+
+              if (type === 'START_BULK') {
+                try {
+                  const results = [];
+                  for (let i = 0; i < strategies.length; i++) {
+                    const s = strategies[i];
+                    const res = runMonkeySimulation(s.trades, priceData, settings);
+                    if (!res.error) {
+                      res.name = s.name;
+                      res.trades = s.trades;
+                      results.push(res);
+                    }
+                    const progressVal = Math.round(((i + 1) / strategies.length) * 100);
+                    self.postMessage({
+                      type: 'PROGRESS',
+                      progress: progressVal,
+                      currentName: s.name,
+                      result: res.error ? null : res
+                    });
+                  }
+                  self.postMessage({ type: 'COMPLETE_BULK', results });
+                } catch (err) {
+                  self.postMessage({ type: 'ERROR', message: err.message });
+                }
+              }
+            };
+          `;
+        }
+
+        const initActiveWorker = () => {
+          if (activeWorker) {
+            activeWorker.terminate();
+          }
+          const code = getWorkerCode();
+          const blob = new Blob([code], { type: 'application/javascript' });
+          activeWorker = new Worker(URL.createObjectURL(blob));
+
+          activeWorker.onmessage = (e) => {
+            const { type, result, message } = e.data;
+
+            if (type === 'COMPLETE_SINGLE') {
+              isCalculatingActive.value = false;
+              if (result && !result.error) {
+                result.name = activeStrategy.value.name;
+                result.trades = activeStrategy.value.trades;
+                activeResult.value = result;
+                nextTick(() => {
+                  drawActiveCharts();
+                });
+              } else {
+                activeResult.value = null;
+              }
+            }
+
+            if (type === 'ERROR') {
+              isCalculatingActive.value = false;
+              errorMessage.value = "Active Strategy Worker Error: " + message;
+            }
+          };
+
+          activeWorker.onerror = (err) => {
+            isCalculatingActive.value = false;
+            errorMessage.value = "Active Strategy Worker Exception: " + err.message;
+          };
+        };
+
+        const initBulkWorker = () => {
+          if (bulkWorker) {
+            bulkWorker.terminate();
+          }
+          const code = getWorkerCode();
+          const blob = new Blob([code], { type: 'application/javascript' });
+          bulkWorker = new Worker(URL.createObjectURL(blob));
+
+          bulkWorker.onmessage = (e) => {
+            const { type, progress: progVal, currentName, result, results, message } = e.data;
+
+            if (type === 'PROGRESS') {
+              progress.value = progVal;
+              currentProcessingName.value = currentName;
+              if (result) {
+                bulkResults.value.push(result);
+                nextTick(() => {
+                  drawBulkPie();
+                });
+              }
+            }
+
+            if (type === 'COMPLETE_BULK') {
+              isCalculatingBulk.value = false;
+              progress.value = 100;
+              currentProcessingName.value = '';
+              bulkResults.value = results;
+              nextTick(() => {
+                drawBulkPie();
+              });
+            }
+
+            if (type === 'ERROR') {
+              isCalculatingBulk.value = false;
+              errorMessage.value = "Bulk Worker Error: " + message;
+            }
+          };
+
+          bulkWorker.onerror = (err) => {
+            isCalculatingBulk.value = false;
+            errorMessage.value = "Bulk Worker Exception: " + err.message;
+          };
+        };
+
+        const cancelCalculation = () => {
+          if (activeWorker) {
+            activeWorker.terminate();
+            activeWorker = null;
+          }
+          if (bulkWorker) {
+            bulkWorker.terminate();
+            bulkWorker = null;
+          }
+          isCalculatingActive.value = false;
+          isCalculatingBulk.value = false;
+          progress.value = 0;
+          currentProcessingName.value = '';
+        };
+
+        // ===================================================================
+        // Action methods
+        // ===================================================================
+        const runActiveStrategyTest = () => {
+          if (!activeStrategy.value || priceData.value.length === 0) return;
+          if (!activeWorker) initActiveWorker();
+          isCalculatingActive.value = true;
+          activeWorker.postMessage({
+            type: 'START_SINGLE',
+            strategy: {
+              name: activeStrategy.value.name,
+              trades: activeStrategy.value.trades.map(t => ({ ...t }))
+            },
+            priceData: priceData.value.map(p => ({ ...p })),
+            settings: {
+              period: settings.period,
+              mmMode: settings.mmMode,
+              numMonkeys: settings.numMonkeys,
+              percentile: settings.percentile
+            }
+          });
+        };
+
+        const runBulkTest = () => {
+          if (bulkStrategies.value.length === 0 || priceData.value.length === 0) return;
+          if (!bulkWorker) initBulkWorker();
+          isCalculatingBulk.value = true;
+          progress.value = 0;
+          currentProcessingName.value = '';
+          bulkResults.value = []; // Clear current results for incremental rendering
+          inspectedStrategy.value = null;
+
+          bulkWorker.postMessage({
+            type: 'START_BULK',
+            strategies: bulkStrategies.value.map(s => ({
+              name: s.name,
+              trades: s.trades.map(t => ({ ...t }))
+            })),
+            priceData: priceData.value.map(p => ({ ...p })),
+            settings: {
+              period: settings.period,
+              mmMode: settings.mmMode,
+              numMonkeys: settings.numMonkeys,
+              percentile: settings.percentile
+            }
+          });
+        };
+
+        const exportMonkeyData = (res) => {
+          if (!res || !res.trades || priceData.value.length === 0) return;
+          
+          const candles = priceData.value;
+          const trades = res.trades;
+          const numMonkeys = settings.numMonkeys;
+          const tfMs = inferTimeframeMs(candles);
+          
+          // 1. Setup sample filters
+          let filterSampleType = null;
+          if (settings.period === 'IS') filterSampleType = 10;
+          if (settings.period === 'OOS') filterSampleType = 20;
+
+          let filteredTrades = trades;
+          if (filterSampleType !== null) {
+            filteredTrades = trades.filter(t => t.SampleType === filterSampleType);
+          }
+
+          if (filteredTrades.length === 0) return;
+
+          // 2. Setup period indices
+          let tMin = Math.min(...filteredTrades.map(t => t.OpenTime));
+          let tMax = Math.max(...filteredTrades.map(t => t.CloseTime));
+          let idxMin = findCandleIndex(tMin);
+          let idxMax = findCandleIndex(tMax);
+
+          if (idxMin === -1 || idxMax === -1 || idxMax <= idxMin) {
+            idxMin = 0;
+            idxMax = candles.length - 1;
+          }
+
+          const M = idxMax - idxMin + 1;
+
+          const alignedTrades = filteredTrades.map(t => {
+            let originalIdx = findCandleIndex(t.OpenTime);
+            if (originalIdx < idxMin || originalIdx > idxMax) {
+              originalIdx = idxMin + Math.floor((idxMax - idxMin) / 2);
+            }
+            return {
+              original: t,
+              t_i: originalIdx,
+              r_i: originalIdx - idxMin
+            };
+          });
+
+          // 3. Determine separator and formatting functions
+          const sep = csvSeparator.value || ';';
+
+          // Wrap any text value as a quoted CSV field
+          const fmtText = (val) => {
+            if (val === null || val === undefined) return '""';
+            return `"${String(val).replace(/"/g, '""')}"`;
+          };
+
+          // Price columns (Open price, Size, Close price): DOT decimal, natural precision
+          // (mirrors how SQX exports these specific columns in the reference CSV).
+          const fmtPrice = (val) => {
+            if (val === null || val === undefined || isNaN(val)) return '""';
+            let strVal = Number(val).toFixed(5);
+            if (strVal.includes('.')) strVal = strVal.replace(/0+$/, '').replace(/\.$/, '');
+            return `"${strVal}"`;
+          };
+
+          // Money / pips columns: COMMA decimal, fixed 2 decimals (e.g. "0,00", "-199,55")
+          const fmtMoney = (val) => {
+            if (val === null || val === undefined || isNaN(val)) return '""';
+            let strVal = Number(val).toFixed(2);
+            return `"${strVal.replace('.', ',')}"`;
+          };
+
+          // SL / PT price levels: COMMA decimal, 5 decimals (e.g. "16285,08984")
+          const fmtLevel = (val) => {
+            if (val === null || val === undefined || isNaN(val)) return '""';
+            let strVal = Number(val).toFixed(5);
+            return `"${strVal.replace('.', ',')}"`;
+          };
+
+          const fmtDate = (timestamp) => {
+            if (!timestamp) return '""';
+            const d = new Date(timestamp);
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const hh = String(d.getHours()).padStart(2, '0');
+            const min = String(d.getMinutes()).padStart(2, '0');
+            const ss = String(d.getSeconds()).padStart(2, '0');
+            return fmtText(`${yyyy}.${mm}.${dd} ${hh}:${min}:${ss}`);
+          };
+
+          const formatDuration = (ms) => {
+            if (ms <= 0) return '"0s"';
+            let totalSecs = Math.floor(ms / 1000);
+            let days = Math.floor(totalSecs / (24 * 3600));
+            totalSecs %= (24 * 3600);
+            let hours = Math.floor(totalSecs / 3600);
+            totalSecs %= 3600;
+            let mins = Math.floor(totalSecs / 60);
+            let secs = totalSecs % 60;
+            
+            let parts = [];
+            if (days > 0) parts.push(`${days}d`);
+            if (hours > 0) parts.push(`${hours}h`);
+            if (mins > 0) parts.push(`${mins}m`);
+            if (parts.length === 0 || secs > 0) parts.push(`${secs}s`);
+            return fmtText(parts.join(' '));
+          };
+
+          // 4. Build CSV headers
+          // Column 1 is an extra "Monkey ID"; columns 2..23 reproduce the reference
+          // strategy CSV exactly, including its two duplicate headers (Profit/Loss, Balance).
+          const headers = [
+            "Monkey ID",                  // extra (not in reference)
+            "Ticket",
+            "Symbol",
+            "Type",
+            "Open time",
+            "Open price",
+            "Size",
+            "Close time",
+            "Close price",
+            "Profit/Loss",
+            "Balance",
+            "Sample type",
+            "Close type",
+            "MAE ($)",
+            "MFE ($)",
+            "Time in trade",
+            "Comment",
+            "Comm/Swap",
+            "Stop Loss price level",
+            "Profit/Loss",                // duplicate of Profit/Loss (matches reference)
+            "Profit/Loss Pips",
+            "Balance",                    // duplicate of Balance (matches reference)
+            "Profit Target price level"
+          ];
+
+          const csvRows = [headers.map(h => `"${h}"`).join(sep)];
+
+          // 5. Simulate each monkey and format their trades
+          for (let m = 0; m < numMonkeys; m++) {
+            let shift = Math.floor(Math.random() * (M - 1)) + 1;
+            
+            // Reconstruct running balance starting from original balance minus first trade's profit
+            let runningBalance = filteredTrades[0].Balance - filteredTrades[0].ProfitLoss;
+
+            for (let k = 0; k < alignedTrades.length; k++) {
+              let at = alignedTrades[k];
+              let origTrade = at.original;
+              
+              let r_prime = (at.r_i - shift) % M;
+              if (r_prime < 0) r_prime += M;
+              let t_prime = idxMin + r_prime;
+
+              let entryPrice = candles[t_prime].open;
+
+              let hasSL = origTrade.SLLevel !== null && origTrade.SLLevel > 0 && origTrade.SLLevel !== -99999999 && origTrade.SLLevel !== origTrade.OpenPrice;
+              let hasTP = origTrade.PTLevel !== null && origTrade.PTLevel > 0 && origTrade.PTLevel !== -99999999 && origTrade.PTLevel !== origTrade.OpenPrice;
+              
+              let sl_pct = hasSL ? Math.abs(origTrade.SLLevel - origTrade.OpenPrice) / origTrade.OpenPrice : 0.0;
+              let tp_pct = hasTP ? Math.abs(origTrade.PTLevel - origTrade.OpenPrice) / origTrade.OpenPrice : 0.0;
+              let direction = origTrade.Type === 2 ? -1 : 1;
+
+              let slPrice = null;
+              let tpPrice = null;
+              if (hasSL) {
+                slPrice = direction === 1 ? entryPrice * (1 - sl_pct) : entryPrice * (1 + sl_pct);
+              }
+              if (hasTP) {
+                tpPrice = direction === 1 ? entryPrice * (1 + tp_pct) : entryPrice * (1 - tp_pct);
+              }
+
+              let exitPrice = null;
+              let exitTime = 0;
+              let closeTypeStr = 'Time exit';
+              let maxBars = holdingBars(origTrade, tfMs);
+
+              // Track price excursion across the bars actually traversed, to compute
+              // this monkey trade's own MAE/MFE (lowest low / highest high seen).
+              let worstLow = entryPrice;
+              let bestHigh = entryPrice;
+
+              for (let b = 0; b < maxBars; b++) {
+                let candleIdx = (t_prime + b) % candles.length;
+                let c = candles[candleIdx];
+
+                if (c.low < worstLow) worstLow = c.low;
+                if (c.high > bestHigh) bestHigh = c.high;
+
+                if (direction === 1) { // Long
+                  if (slPrice !== null && c.low <= slPrice) {
+                    exitPrice = slPrice;
+                    exitTime = c.time;
+                    closeTypeStr = 'SL';
+                    break;
+                  }
+                  if (tpPrice !== null && c.high >= tpPrice) {
+                    exitPrice = tpPrice;
+                    exitTime = c.time;
+                    closeTypeStr = 'PT';
+                    break;
+                  }
+                } else { // Short
+                  if (slPrice !== null && c.high >= slPrice) {
+                    exitPrice = slPrice;
+                    exitTime = c.time;
+                    closeTypeStr = 'SL';
+                    break;
+                  }
+                  if (tpPrice !== null && c.low <= tpPrice) {
+                    exitPrice = tpPrice;
+                    exitTime = c.time;
+                    closeTypeStr = 'PT';
+                    break;
+                  }
+                }
+              }
+
+              if (exitPrice === null) {
+                let exitIdx = (t_prime + maxBars) % candles.length;
+                exitPrice = candles[exitIdx].close;
+                exitTime = candles[exitIdx].time;
+                if (candles[exitIdx].low < worstLow) worstLow = candles[exitIdx].low;
+                if (candles[exitIdx].high > bestHigh) bestHigh = candles[exitIdx].high;
+              }
+
+              // Derive the price->money multiplier from the original trade's GROSS P/L
+              // (P/L excluding commission/swap), so broker costs don't distort the slope.
+              let origCommSwap = origTrade.CommSwap || 0.0;
+              let origPriceDiff = origTrade.ClosePrice - origTrade.OpenPrice;
+              let grossOrigPL = origTrade.ProfitLoss - origCommSwap;
+              let pipMult = 0.0;
+              if (Math.abs(origPriceDiff) > 1e-8) {
+                pipMult = grossOrigPL / (origTrade.Size * origPriceDiff);
+              }
+
+              let origBalanceBefore = origTrade.Balance - origTrade.ProfitLoss;
+              if (origBalanceBefore <= 0) origBalanceBefore = 10000.0;
+
+              let monkeySize = origTrade.Size;
+              let priceCorrection = hasSL ? (origTrade.OpenPrice / entryPrice) : 1.0;
+
+              if (settings.mmMode === 'Compounding') {
+                let compoundingFactor = runningBalance / origBalanceBefore;
+                monkeySize = origTrade.Size * compoundingFactor * priceCorrection;
+              } else {
+                monkeySize = origTrade.Size * priceCorrection;
+              }
+
+              if (monkeySize < 0.01) monkeySize = 0.01;
+
+              let simPriceDiff = exitPrice - entryPrice;
+              let grossPL = monkeySize * simPriceDiff * pipMult;
+
+              // Commission/swap of THIS monkey trade: the original trade's comm/swap
+              // scaled by the monkey's size (broker cost is proportional to volume,
+              // and the holding period in bars is identical to the original trade).
+              let monkeyCommSwap = (origTrade.Size > 1e-9) ? (origCommSwap / origTrade.Size) * monkeySize : 0.0;
+
+              // Net P/L matches SQX convention (gross + signed commission/swap).
+              let tradePL = grossPL + monkeyCommSwap;
+
+              runningBalance += tradePL;
+
+              // MAE/MFE in money: convert the worst/best price excursion of this monkey
+              // trade using the same size and multiplier. MAE <= 0, MFE >= 0.
+              let moneyAtLow = monkeySize * (worstLow - entryPrice) * pipMult;
+              let moneyAtHigh = monkeySize * (bestHigh - entryPrice) * pipMult;
+              let maeMoney = Math.min(0, moneyAtLow, moneyAtHigh);
+              let mfeMoney = Math.max(0, moneyAtLow, moneyAtHigh);
+
+              // Calculate PL pips
+              let plPips = 0.0;
+              let tickSize = 0.0001;
+              if (origTrade.ProfitLossPips && Math.abs(origPriceDiff) > 1e-8) {
+                let pipsPerPriceUnit = origTrade.ProfitLossPips / origPriceDiff;
+                plPips = simPriceDiff * pipsPerPriceUnit;
+              } else {
+                plPips = simPriceDiff / tickSize;
+              }
+
+              let durationMs = exitTime - candles[t_prime].time;
+
+              // Create CSV columns: "Monkey ID" + the reference's 22 columns in exact
+              // order, including the reference's duplicate Profit/Loss and Balance columns.
+              let rowCols = [
+                fmtText(m + 1),                                   // Monkey ID (extra)
+                fmtText(`M${m+1}_${origTrade.Ticket}`),           // Ticket
+                fmtText(origTrade.Symbol),                        // Symbol
+                fmtText(origTrade.Type === 2 ? 'Sell' : 'Buy'),   // Type
+                fmtDate(candles[t_prime].time),                   // Open time
+                fmtPrice(entryPrice),                             // Open price
+                fmtPrice(monkeySize),                             // Size
+                fmtDate(exitTime),                                // Close time
+                fmtPrice(exitPrice),                              // Close price
+                fmtMoney(tradePL),                                // Profit/Loss
+                fmtMoney(runningBalance),                         // Balance
+                fmtText(origTrade.SampleType === 10 ? 'IST' : 'OOT'), // Sample type
+                fmtText(closeTypeStr),                            // Close type
+                fmtMoney(maeMoney),                               // MAE ($)
+                fmtMoney(mfeMoney),                               // MFE ($)
+                formatDuration(durationMs),                       // Time in trade
+                fmtText(`Monkey ${m + 1}`),                       // Comment
+                fmtMoney(monkeyCommSwap),                         // Comm/Swap
+                fmtLevel(slPrice || 0.0),                         // Stop Loss price level
+                fmtMoney(tradePL),                                // Profit/Loss (duplicate)
+                fmtMoney(plPips),                                 // Profit/Loss Pips
+                fmtMoney(runningBalance),                         // Balance (duplicate)
+                fmtLevel(tpPrice || 0.0)                          // Profit Target price level
+              ];
+
+              csvRows.push(rowCols.join(sep));
+            }
+          }
+
+          // 6. Trigger download
+          const blob = new Blob([csvRows.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.setAttribute("href", url);
+          link.setAttribute("download", `${res.name}_monkey_simulation_data.csv`);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        };
+
+        const runTestOnAll = () => {
+          runActiveStrategyTest();
+          runBulkTest();
+        };
+
+        const onSettingsChange = () => {
+          if (priceData.value.length > 0) {
+            runTestOnAll();
+          }
+        };
+
+        const inspectBulkStrategy = (res) => {
+          inspectedStrategy.value = res;
+          nextTick(() => {
+            drawBulkCharts();
+          });
+        };
+
+        // ===================================================================
+        // Canvas charts painting functions
+        // ===================================================================
+        function paintGaussianHistogram(canvas, res) {
+          if (!canvas) return;
+          const ctx = canvas.getContext('2d');
+          const width = canvas.width = canvas.parentElement.clientWidth;
+          const height = canvas.height = canvas.parentElement.clientHeight;
+          ctx.clearRect(0, 0, width, height);
+
+          const profits = res.monkeyProfits;
+          if (!profits || profits.length === 0) return;
+
+          const isDark = theme.value === 'dark';
+          const txtColor = isDark ? '#e0e0e0' : '#333333';
+          const gridColor = isDark ? '#444444' : '#E0E0E0';
+
+          const padL = 50, padR = 20, padT = 20, padB = 30;
+          const chartW = width - padL - padR;
+          const chartH = height - padT - padB;
+
+          // Hist bins
+          const numBins = 30;
+          const minVal = Math.min(profits[0], res.realReturn) * 1.1;
+          const maxVal = Math.max(profits[profits.length - 1], res.realReturn) * 1.1;
+          const range = maxVal - minVal;
+
+          const bins = Array(numBins).fill(0);
+          profits.forEach(p => {
+            let bIdx = Math.floor(((p - minVal) / range) * numBins);
+            if (bIdx >= numBins) bIdx = numBins - 1;
+            if (bIdx < 0) bIdx = 0;
+            bins[bIdx]++;
+          });
+
+          const maxBinCount = Math.max(...bins, 1);
+
+          // Draw grid and axis
+          ctx.strokeStyle = gridColor;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(padL, padT);
+          ctx.lineTo(padL, padT + chartH);
+          ctx.lineTo(padL + chartW, padT + chartH);
+          ctx.stroke();
+
+          // Horizontal grid lines
+          ctx.font = '10px Arial';
+          ctx.fillStyle = txtColor;
+          ctx.textAlign = 'right';
+          for (let j = 0; j <= 4; j++) {
+            let y = padT + chartH - (chartH / 4) * j;
+            let val = Math.round((maxBinCount / 4) * j);
+            ctx.fillText(val, padL - 8, y + 3);
+            ctx.beginPath();
+            ctx.moveTo(padL, y);
+            ctx.lineTo(padL + chartW, y);
+            ctx.stroke();
+          }
+
+          // X axis labels
+          ctx.textAlign = 'center';
+          for (let j = 0; j <= 4; j++) {
+            let x = padL + (chartW / 4) * j;
+            let val = Math.round(minVal + (range / 4) * j);
+            ctx.fillText('$' + val, x, padT + chartH + 15);
+          }
+
+          // Draw histogram bins
+          const binW = chartW / numBins;
+          ctx.fillStyle = isDark ? 'rgba(255, 165, 0, 0.3)' : 'rgba(255, 165, 0, 0.4)';
+          ctx.strokeStyle = isDark ? 'rgba(255, 165, 0, 0.6)' : 'rgba(255, 165, 0, 0.8)';
+          
+          for (let i = 0; i < numBins; i++) {
+            let x = padL + i * binW;
+            let h = (bins[i] / maxBinCount) * chartH;
+            let y = padT + chartH - h;
+            ctx.fillRect(x + 1, y, binW - 2, h);
+            ctx.strokeRect(x + 1, y, binW - 2, h);
+          }
+
+          // Draw actual strategy return line
+          let realX = padL + ((res.realReturn - minVal) / range) * chartW;
+          if (realX >= padL && realX <= padL + chartW) {
+            ctx.strokeStyle = 'lime';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(realX, padT);
+            ctx.lineTo(realX, padT + chartH);
+            ctx.stroke();
+
+            ctx.fillStyle = 'lime';
+            ctx.font = 'bold 11px Arial';
+            ctx.textAlign = realX > padL + chartW / 2 ? 'right' : 'left';
+            ctx.fillText(`Strategy: $${res.realReturn.toFixed(0)} (${res.zScore.toFixed(2)} σ)`, realX + (realX > padL + chartW / 2 ? -8 : 8), padT + 15);
+          }
+        }
+
+        function paintEquityCurveComparison(canvas, res) {
+          if (!canvas) return;
+          const ctx = canvas.getContext('2d');
+          const width = canvas.width = canvas.parentElement.clientWidth;
+          const height = canvas.height = canvas.parentElement.clientHeight;
+          ctx.clearRect(0, 0, width, height);
+
+          const realEq = res.realEquity;
+          const monkeyCurves = res.monkeyEquities;
+          if (!realEq || realEq.length === 0) return;
+
+          const isDark = theme.value === 'dark';
+          const txtColor = isDark ? '#e0e0e0' : '#333333';
+          const gridColor = isDark ? '#444444' : '#E0E0E0';
+
+          const padL = 50, padR = 20, padT = 20, padB = 30;
+          const chartW = width - padL - padR;
+          const chartH = height - padT - padB;
+
+          // Find bounds
+          let minVal = Math.min(...realEq, ...monkeyCurves.flatMap(c => c));
+          let maxVal = Math.max(...realEq, ...monkeyCurves.flatMap(c => c));
+          let range = (maxVal - minVal) || 100.0;
+          
+          minVal -= range * 0.05;
+          maxVal += range * 0.05;
+          range = maxVal - minVal;
+
+          const N = realEq.length;
+
+          // Helper to get coordinates
+          const getX = (i) => padL + (i / (N - 1)) * chartW;
+          const getY = (v) => padT + chartH - ((v - minVal) / range) * chartH;
+
+          // Grid & axes
+          ctx.strokeStyle = gridColor;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(padL, padT);
+          ctx.lineTo(padL, padT + chartH);
+          ctx.lineTo(padL + chartW, padT + chartH);
+          ctx.stroke();
+
+          // Y Axis values
+          ctx.font = '10px Arial';
+          ctx.fillStyle = txtColor;
+          ctx.textAlign = 'right';
+          for (let j = 0; j <= 4; j++) {
+            let y = padT + chartH - (chartH / 4) * j;
+            let val = Math.round(minVal + (range / 4) * j);
+            ctx.fillText('$' + val, padL - 8, y + 3);
+            ctx.beginPath();
+            ctx.moveTo(padL, y);
+            ctx.lineTo(padL + chartW, y);
+            ctx.stroke();
+          }
+
+          // Draw monkey equity curves
+          ctx.strokeStyle = isDark ? 'rgba(255, 165, 0, 0.12)' : 'rgba(255, 140, 0, 0.2)';
+          ctx.lineWidth = 1.0;
+          monkeyCurves.forEach(curve => {
+            ctx.beginPath();
+            ctx.moveTo(getX(0), getY(curve[0]));
+            for (let i = 1; i < curve.length; i++) {
+              ctx.lineTo(getX(i), getY(curve[i]));
+            }
+            ctx.stroke();
+          });
+
+          // Draw monkey threshold line (reference line at percentile level)
+          const thresholdProfit = res.monkeyThreshold;
+          const endBalance = realEq[0] + thresholdProfit;
+          ctx.strokeStyle = isDark ? 'rgba(100, 200, 255, 0.4)' : 'rgba(100, 150, 255, 0.5)';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([5, 5]);
+          ctx.beginPath();
+          ctx.moveTo(getX(0), getY(realEq[0]));
+          ctx.lineTo(getX(N - 1), getY(endBalance));
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // Draw strategy equity curve
+          ctx.strokeStyle = 'lime';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.moveTo(getX(0), getY(realEq[0]));
+          for (let i = 1; i < realEq.length; i++) {
+            ctx.lineTo(getX(i), getY(realEq[i]));
+          }
+          ctx.stroke();
+        }
+
+        function drawPieChart(canvas, pass, fail) {
+          if (!canvas) return;
+          const ctx = canvas.getContext('2d');
+          const size = canvas.width = canvas.height = canvas.parentElement.clientWidth;
+          ctx.clearRect(0, 0, size, size);
+
+          const total = pass + fail;
+          if (total === 0) return;
+
+          const center = size / 2;
+          const radius = size * 0.45;
+
+          const passAngle = (pass / total) * 2 * Math.PI;
+
+          // Draw Green sector (Pass)
+          ctx.fillStyle = 'var(--success)';
+          ctx.beginPath();
+          ctx.moveTo(center, center);
+          ctx.arc(center, center, radius, -Math.PI / 2, -Math.PI / 2 + passAngle);
+          ctx.closePath();
+          ctx.fill();
+
+          // Draw Red sector (Fail)
+          ctx.fillStyle = 'var(--danger)';
+          ctx.beginPath();
+          ctx.moveTo(center, center);
+          ctx.arc(center, center, radius, -Math.PI / 2 + passAngle, 1.5 * Math.PI);
+          ctx.closePath();
+          ctx.fill();
+
+          // Inner white hole (Donut chart styling)
+          ctx.fillStyle = theme.value === 'dark' ? '#252525' : '#F8F9FA';
+          ctx.beginPath();
+          ctx.arc(center, center, radius * 0.6, 0, 2 * Math.PI);
+          ctx.fill();
+        }
+
+        const drawActiveCharts = () => {
+          if (!activeResult.value) return;
+          paintGaussianHistogram(activeBellCanvas.value, activeResult.value);
+          paintEquityCurveComparison(activeEquityCanvas.value, activeResult.value);
+          
+          let pass = activeResult.value.status === 'PASSED' ? 1 : 0;
+          let fail = activeResult.value.status === 'FAILED' ? 1 : 0;
+          drawPieChart(activeMiniPie.value, pass, fail);
+        };
+
+        const drawBulkCharts = () => {
+          if (!inspectedStrategy.value) return;
+          paintGaussianHistogram(bulkBellCanvas.value, inspectedStrategy.value);
+          paintEquityCurveComparison(bulkEquityCanvas.value, inspectedStrategy.value);
+        };
+
+        const drawBulkPie = () => {
+          if (bulkResults.value.length === 0) return;
+          let pass = bulkResults.value.filter(r => r.status === 'PASSED').length;
+          let fail = bulkResults.value.filter(r => r.status === 'FAILED' || r.status === 'LOW TRADES').length;
+          drawPieChart(bulkPieChartCanvas.value, pass, fail);
+        };
+
+        const redrawAllCharts = () => {
+          drawActiveCharts();
+          drawBulkCharts();
+          drawBulkPie();
+        };
+
+        // Computed values
+        const passRate = computed(() => {
+          if (bulkResults.value.length === 0) return 0.0;
+          let passCount = bulkResults.value.filter(r => r.status === 'PASSED').length;
+          return ((passCount / bulkResults.value.length) * 100).toFixed(1);
+        });
+
+        const avgZScore = computed(() => {
+          if (bulkResults.value.length === 0) return 0.0;
+          let total = bulkResults.value.reduce((s, r) => s + r.zScore, 0);
+          return total / bulkResults.value.length;
+        });
+
+        // Initialize Resize Observers
+        onMounted(() => {
+          window.addEventListener('message', handleMessage);
+          
+          // Apply initial prefers-color-scheme theme
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          theme.value = prefersDark ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', theme.value);
+
+          // Force load translations
+          loadLocale('en').then(() => {
+            localeVersion.value++;
+          });
+
+          // Canvas resize listeners
+          const ro = new ResizeObserver(() => {
+            redrawAllCharts();
+          });
+
+          if (activeBellContainer.value) ro.observe(activeBellContainer.value);
+          if (activeEquityContainer.value) ro.observe(activeEquityContainer.value);
+          if (bulkBellContainer.value) ro.observe(bulkBellContainer.value);
+          if (bulkEquityContainer.value) ro.observe(bulkEquityContainer.value);
+        });
+
+        return {
+          theme,
+          lang,
+          currentTab,
+          settings,
+          priceData,
+          activeStrategy,
+          activeResult,
+          bulkStrategies,
+          bulkResults,
+          inspectedStrategy,
+          activeBellCanvas,
+          activeEquityCanvas,
+          activeMiniPie,
+          bulkBellCanvas,
+          bulkEquityCanvas,
+          bulkPieChartCanvas,
+          activeBellContainer,
+          activeEquityContainer,
+          bulkBellContainer,
+          bulkEquityContainer,
+          errorMessage,
+          csvSeparator,
+          exportMonkeyData,
+          loadPriceCSV,
+          clearPriceData,
+          loadBulkCSV,
+          clearBulkData,
+          runTestOnAll,
+          onSettingsChange,
+          inspectBulkStrategy,
+          passRate,
+          avgZScore,
+          t,
+          tHtml,
+          isCalculating,
+          progress,
+          currentProcessingName,
+          cancelCalculation
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>

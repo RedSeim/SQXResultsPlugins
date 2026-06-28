@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plugin Template</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #F6F6F6;
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+            color: #333;
+            font-size: 12px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        body.dark-theme {
+            background: #3b3b3b;
+            color: #cccccc;
+        }
+
+        .container {
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            overflow: auto;
+            transition: background-color 0.3s ease;
+        }
+        
+        body.dark-theme .container {
+            background: #3b3b3b;
+        }
+
+        .header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #c1c1c1;
+            padding: 10px 15px;
+            text-align: left;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        
+        body.dark-theme .header {
+            background-color: #292929;
+            border-bottom-color: #696969;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            margin: 0 0 5px 0;
+            color: #333;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+        
+        body.dark-theme .header h1 {
+            color: #ffffff;
+        }
+
+        .header p {
+            font-size: 11px;
+            color: #777777;
+            margin: 0;
+        }
+
+        .content {
+            padding: 10px;
+        }
+
+        .documentation {
+            background-color: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .12), 0 1px 2px rgba(0, 0, 0, .24);
+            padding: 11px;
+            margin-bottom: 16px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        body.dark-theme .documentation {
+            background-color: #292929;
+            color: #cccccc;
+        }
+
+        .documentation h2 {
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #c1c1c1;
+            padding-bottom: 6px;
+            font-weight: bold;
+        }
+        
+        body.dark-theme .documentation h2 {
+            color: #ffffff;
+            border-bottom-color: #696969;
+        }
+
+        .documentation h3 {
+            color: #4B78AF;
+            font-size: 13px;
+            margin-top: 16px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        body.dark-theme .documentation h3 {
+            color: #7aa8fd;
+        }
+
+        .documentation h4 {
+            color: #4B78AF;
+            font-size: 12px;
+            margin-top: 12px;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+        
+        body.dark-theme .documentation h4 {
+            color: #7aa8fd;
+        }
+
+        .documentation p {
+            color: #555555;
+            line-height: 1.5;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        
+        body.dark-theme .documentation p {
+            color: #cccccc;
+        }
+
+        .documentation code {
+            background: #f0f0f0;
+            border: 1px solid #c1c1c1;
+            border-radius: 3px;
+            padding: 2px 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: #4B78AF;
+        }
+        
+        body.dark-theme .documentation code {
+            background: #444444;
+            border-color: #696969;
+            color: #7aa8fd;
+        }
+
+        .documentation pre {
+            background-color: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .12), 0 1px 2px rgba(0, 0, 0, .24);
+            color: #333;
+            border: 1px solid #c1c1c1;
+            border-radius: 3px;
+            padding: 11px;
+            overflow-x: auto;
+            margin: 8px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+        }
+        
+        body.dark-theme .documentation pre {
+            background-color: #292929;
+            color: #cccccc;
+            border-color: #696969;
+        }
+
+        .documentation ul {
+            margin-left: 20px;
+            margin-bottom: 12px;
+        }
+
+        .documentation ol {
+            margin-left: 20px;
+            margin-bottom: 12px;
+        }
+
+        .documentation li {
+            color: #555555;
+            line-height: 1.5;
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+        
+        body.dark-theme .documentation li {
+            color: #cccccc;
+        }
+
+        .example-section {
+            background-color: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .12), 0 1px 2px rgba(0, 0, 0, .24);
+            padding: 11px;
+            margin-top: 16px;
+        }
+        
+        body.dark-theme .example-section {
+            background-color: #292929;
+            color: #cccccc;
+        }
+
+        .example-section h2 {
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #c1c1c1;
+            padding-bottom: 6px;
+            font-weight: bold;
+        }
+        
+        body.dark-theme .example-section h2 {
+            color: #ffffff;
+            border-bottom-color: #696969;
+        }
+
+        .example-section p {
+            color: #555555;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+
+        .response-area {
+            margin-top: 10px;
+        }
+
+        .response-area label {
+            display: block;
+            font-size: 12px;
+            color: #555;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .response-area label {
+            display: block;
+            font-size: 12px;
+            color: #555;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        body.dark-theme .response-area label {
+            color: #cccccc;
+        }
+        
+        .response-area textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 8px;
+            border: 1px solid #c1c1c1;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            background: #f9f9f9;
+            color: #333;
+            resize: vertical;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        
+        body.dark-theme .response-area textarea {
+            background: #3b3b3b;
+            color: #cccccc;
+            border-color: #696969;
+        }
+
+        .response-area textarea:focus {
+            outline: none;
+            border-color: #4B78AF;
+            box-shadow: 0 0 3px rgba(75, 120, 175, 0.3);
+        }
+        
+        body.dark-theme .response-area textarea:focus {
+            border-color: #7aa8fd;
+            box-shadow: 0 0 3px rgba(122, 168, 253, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Custom Plugin - Sample</h1>
+            <p>Template and guide for creating custom ResultsPlugins</p>
+        </div>
+        
+        <div class="content">
+            <div class="documentation">
+                <h2>📚 How to Create Your Own Custom Plugin</h2>
+                
+                <h3>Quick Start</h3>
+                <p>
+                    Creating a custom ResultsPlugin is very simple:
+                </p>
+                <ol>
+                    <li>Create a new folder in <code>user/extend/ResultsPlugins/</code> with your plugin name (e.g., <code>MyCustomPlugin</code>)</li>
+                    <li>Create an <code>index.html</code> file inside that folder</li>
+                    <li>Restart StrategyQuant X</li>
+                    <li>Your plugin will appear as a new tab in the Results section!</li>
+                </ol>
+                
+                <h3>How It Works</h3>
+                <p>
+                    StrategyQuant X automatically scans the <code>user/extend/ResultsPlugins/</code> folder and registers each subfolder 
+                    containing an <code>index.html</code> file as a new tab. Your HTML file is displayed in an iframe, and you can communicate 
+                    with the parent application using PostMessage API.
+                </p>
+                
+                <h3>What Happens When You Select a Strategy</h3>
+                <p>
+                    When a strategy is selected in StrategyQuant X Results section, your plugin will automatically receive:
+                </p>
+                <ul>
+                    <li>Strategy information (name, project, result key, etc.) via <code>STRATEGY_DATA</code> message</li>
+                    <li>You can then request statistics or orders data using PostMessage API</li>
+                </ul>
+                
+                <h3>Folder Structure</h3>
+                <p>Your plugin folder structure should look like this:</p>
+                <pre>user/extend/ResultsPlugins/
+  └── MyCustomPlugin/
+      └── index.html</pre>
+                
+                <h3>Available Messages</h3>
+                <p>The plugin uses PostMessage API for communication:</p>
+                
+                <h4>Incoming Messages (from parent window):</h4>
+                <ul>
+                    <li><code>STRATEGY_DATA</code> - Contains strategy information when a strategy is selected</li>
+                    <li><code>SET_THEME</code> - Contains theme information ('dark' or 'light') when skin is changed or plugin loads</li>
+                    <li><code>STATS_RESPONSE</code> - Contains statistics data after requesting stats</li>
+                    <li><code>ORDERS_RESPONSE</code> - Contains orders data after requesting orders</li>
+                    <li><code>LAST_SETTINGS_XML_RESPONSE</code> - Contains last settings XML data after requesting last settings XML</li>
+                    <li><code>SOURCE_CODE_RESPONSE</code> - Contains generated source code after requesting with <code>GET_SOURCE_CODE</code></li>
+                    <li><code>SYMBOL_INFO_RESPONSE</code> - Contains symbol info after requesting with <code>GET_SYMBOL_INFO</code></li>
+                </ul>
+                
+                <h4>Outgoing Messages (to parent window):</h4>
+                <ul>
+                    <li><code>GET_STATS</code> - Request statistics data with parameters</li>
+                    <li><code>GET_ORDERS</code> - Request orders data with parameters</li>
+                    <li><code>GET_LAST_SETTINGS_XML</code> - Request last settings XML containing backtest configuration. Each settings tab in SQX has its own XML section (Data, Money Management, Trading Options, etc.)</li>
+                    <li><code>GET_SOURCE_CODE</code> - Request strategy source code in a given format (xml, pseudo, mq4, mq5, el, etc.)</li>
+                    <li><code>GET_SYMBOL_INFO</code> - Request symbol info</li>
+                </ul>
+                
+                <h3>Usage Examples</h3>
+                
+                <h4>Example 1: Request Statistics</h4>
+                <pre>window.parent.postMessage({
+    type: 'GET_STATS',
+    params: {
+        resultKey: 'Portfolio',
+        direction: '0',      // 0=Both, 1=Long, -1=Short
+        sampleType: '127',   // 127=Full, 10=In-Sample, 20=Out-of-Sample
+        plType: '10'         // 10=Money, 20=Percent, 30=Pips
+    }
+}, '*');
+// Note: projectName, databankName, and strategyName are automatically added from the selected strategy</pre>
+                
+                <h4>Example 2: Listen for Strategy Data</h4>
+                <pre>window.addEventListener('message', function(event) {
+    if (event.data.type === 'STRATEGY_DATA') {
+        var strategyName = event.data.data.strategyName;
+        var projectName = event.data.data.projectName;
+        // Use the data...
+    }
+});</pre>
+                
+                <h4>Example 3: Listen for Stats Response</h4>
+                <pre>window.addEventListener('message', function(event) {
+    if (event.data.type === 'STATS_RESPONSE') {
+        var stats = event.data.data.stats;
+        var netProfit = stats.NetProfit;
+        var numTrades = stats.NumberOfTrades;
+        // Display the stats...
+    }
+});</pre>
+                
+                <h4>Example 4: Request Orders</h4>
+                <pre>window.parent.postMessage({
+    type: 'GET_ORDERS',
+    params: {
+        resultKey: 'Portfolio',
+        direction: '0',      // 0=Both, 1=Long, -1=Short
+        sampleType: '127'    // 127=Full, 10=In-Sample, 20=Out-of-Sample
+    }
+}, '*');
+// Note: projectName, databankName, and strategyName are automatically added from the selected strategy</pre>
+                
+                <h4>Example 5: Listen for Theme Changes</h4>
+                <pre>window.addEventListener('message', function(event) {
+    if (event.data.type === 'SET_THEME') {
+        var theme = event.data.theme; // 'dark' or 'light'
+        if (theme === 'dark') {
+            document.body.style.backgroundColor = '#1a1a1a';
+            document.body.style.color = '#ffffff';
+        } else {
+            document.body.style.backgroundColor = '#F6F6F6';
+            document.body.style.color = '#333';
+        }
+    }
+});</pre>
+                
+                <h4>Example 6: Request Last Settings XML</h4>
+                <pre>window.parent.postMessage({
+    type: 'GET_LAST_SETTINGS_XML',
+    params: {}
+}, '*');
+// Note: projectName, databankName, and strategyName are automatically added from the selected strategy</pre>
+                
+                <h4>Example 7: Listen for Last Settings XML Response</h4>
+                <pre>window.addEventListener('message', function(event) {
+    if (event.data.type === 'LAST_SETTINGS_XML_RESPONSE') {
+        var lastSettingsXml = event.data.data.lastSettingsXml;
+        // lastSettingsXml is a string containing the XML settings from the last backtest
+        // Each settings tab in SQX has its own XML section stored:
+        // - Data settings (symbol, date range, sample type, etc.)
+        // - Money Management settings
+        // - Trading Options
+        // - And other settings tabs configuration
+        // Parse the XML to access specific sections as needed
+        // Use the XML data...
+    }
+});</pre>
+                
+                <h4>Example 8: Request Source Code (XML, MT4, MT5, EasyLanguage, etc.)</h4>
+                <pre>// Request by format key (same as on Source Code tab):
+window.parent.postMessage({
+    type: 'GET_SOURCE_CODE',
+    params: {
+        format: 'xml'   // 'xml' | 'pseudo' | 'mq4' | 'mq5' | 'el' | 'pla' | 'java'
+    }
+}, '*');
+
+// Or pass full type name:
+window.parent.postMessage({
+    type: 'GET_SOURCE_CODE',
+    params: {
+        type: 'Strategy XML'   // e.g. 'MetaTrader 4 (*.mq4)', 'Pseudo Code(*.TXT)'
+    }
+}, '*');
+// Note: projectName, databankName, strategyName are automatically added from the selected strategy</pre>
+                
+                <h4>Example 9: Listen for Source Code Response</h4>
+                <pre>window.addEventListener('message', function(event) {
+    if (event.data.type === 'SOURCE_CODE_RESPONSE') {
+        var data = event.data.data;
+        var code = data.code;           // generated source code string
+        var warning = data.warning;     // optional warning message
+        var learnMoreURL = data.learnMoreURL;  // optional link
+        if (data.success === 'ok') {
+            // Use code (e.g. display in textarea, copy to clipboard)
+        }
+    }
+});</pre>
+                
+                <h4>Example 10: Request Symbol Info (GET_SYMBOL_INFO)</h4>
+                <pre>window.parent.postMessage({
+    type: 'GET_SYMBOL_INFO',
+    symbol: 'EURUSD_M1_dukas'
+}, '*');
+// Response: SYMBOL_INFO_RESPONSE with event.data.data = symbol object or null</pre>
+                
+                <h4>Example 11: Listen for Symbol Info Response</h4>
+                <pre>window.addEventListener('message', function(event) {
+    if (event.data.type === 'SYMBOL_INFO_RESPONSE') {
+        var symbolObj = event.data.data;  // the symbol object or null
+    }
+});</pre>
+                
+                <h4>Example 12: Listen for Orders Response</h4>
+                <pre>window.addEventListener('message', function(event) {
+    if (event.data.type === 'ORDERS_RESPONSE') {
+        var orders = event.data.data.orders;
+        // orders is an array of order objects
+        orders.forEach(function(order) {
+            var ticket = order.Ticket;
+            var pl = order.PL;
+            var openTime = new Date(order.OpenTime);
+            // Order.Type is a byte constant: 1=Buy, 2=Sell, 3=BuyLimit, 4=SellLimit, 5=BuyStop, 6=SellStop
+            var orderType = order.Type;
+            // Convert to string if needed:
+            var orderTypeString = getOrderTypeString(orderType);
+            // Order.CloseType is a byte constant: 1=Manual, 2=SL, 3=PT, 4=EndTest, etc.
+            var closeType = order.CloseType;
+            // Convert to string if needed:
+            var closeTypeString = getOrderCloseTypeString(closeType);
+            // Process each order...
+        });
+    }
+});
+
+// Helper function to convert order type constant to string
+function getOrderTypeString(type) {
+    switch(type) {
+        case 0: return 'Any';
+        case 1: return 'Buy';
+        case 2: return 'Sell';
+        case 3: return 'BuyLimit';
+        case 4: return 'SellLimit';
+        case 5: return 'BuyStop';
+        case 6: return 'SellStop';
+        case 7: return 'BuyStopLimit';
+        case 8: return 'SellStopLimit';
+        case 9: return 'Deposit';
+        case 10: return 'Withdrawal';
+        case 11: return 'Balance';
+        default: return 'Unknown';
+    }
+}
+
+// Helper function to convert order close type constant to string
+function getOrderCloseTypeString(closeType) {
+    switch(closeType) {
+        case 1: return 'Manual';
+        case 2: return 'SL';
+        case 3: return 'PT';
+        case 4: return 'EndTest';
+        case 5: return 'End Of Day';
+        case 6: return 'Expired';
+        case 7: return 'Reversed';
+        case 8: return 'Deleted';
+        case 9: return 'Replaced';
+        case 11: return 'OCA';
+        case 12: return 'Commission';
+        case 13: return 'End Of Day (Time)';
+        case 14: return 'End Of Friday';
+        case 16: return 'End Of Friday (Time)';
+        case 17: return 'End Of Range';
+        case 18: return 'Control order';
+        case 19: return 'Exit After X Bars';
+        case 20: return 'MoveSL2BE';
+        case 21: return 'TrailingStop';
+        case 22: return 'Exit Signal';
+        case 55: return 'End Of Day (Next Market Open)';
+        case 60: return 'Delisted';
+        default: return 'Unknown';
+    }
+}</pre>
+                
+                <h3>Available Statistics Fields</h3>
+                <p>When you receive <code>STATS_RESPONSE</code>, the stats object contains:</p>
+                <ul>
+                    <li><code>NetProfit</code> - Net profit in currency</li>
+                    <li><code>NetProfitInPips</code> - Net profit in pips</li>
+                    <li><code>NumberOfTrades</code> - Total number of trades</li>
+                    <li><code>Drawdown</code> - Maximum drawdown (in currency, percent, or pips depending on plType)</li>
+                    <li><code>PctDrawdown</code> - Maximum drawdown percentage</li>
+                    <li><code>PipsDrawdown</code> - Maximum drawdown in pips</li>
+                    <li><code>AvgProfitByDay</code> - Average profit per day</li>
+                    <li><code>AvgProfitByMonth</code> - Average profit per month</li>
+                    <li><code>AvgProfitByYear</code> - Average profit per year</li>
+                    <li><code>AvgPctProfitByYear</code> - Average percentage profit per year</li>
+                    <li><code>AvgTrade</code> - Average profit per trade</li>
+                    <li><code>AvgAbsTrade</code> - Average absolute profit per trade</li>
+                    <li><code>AvgTradesPerDay</code> - Average number of trades per day</li>
+                    <li><code>AvgTradesPerMonth</code> - Average number of trades per month</li>
+                    <li><code>AvgTradesPerYear</code> - Average number of trades per year</li>
+                    <li><code>ProfitFactor</code> - Profit factor (Gross Profit / Gross Loss)</li>
+                    <li><code>SharpeRatio</code> - Sharpe ratio (risk-adjusted return measure)</li>
+                    <li><code>Stability</code> - Stability metric (how straight and steep is the equity curve)</li>
+                    <li><code>Symmetry</code> - Symmetry between Long and Short side profits</li>
+                    <li><code>ReturnDDRatio</code> - Return to Drawdown ratio</li>
+                    <li><code>ReturnOpenDDRatio</code> - Return to Open Drawdown ratio</li>
+                    <li><code>AAR_DD_Ratio</code> - Average Annual Return to Drawdown ratio</li>
+                    <li><code>CalmarRatio</code> - Calmar ratio (return to max drawdown)</li>
+                    <li><code>RExpectancy</code> - Risk-adjusted expectancy</li>
+                    <li><code>RExpectancyScore</code> - Risk-adjusted expectancy score</li>
+                    <li><code>SQN</code> - System Quality Number</li>
+                    <li><code>SQNScore</code> - SQN Score (as decimal, e.g., 0.3 = 30%)</li>
+                    <li><code>WinLossRatio</code> - Win/Loss ratio</li>
+                    <li><code>WinningPct</code> - Winning percentage</li>
+                    <li><code>PayoutRatio</code> - Profit factor (Payout Ratio)</li>
+                    <li><code>AvgBarsTrade</code> - Average number of bars per trade</li>
+                    <li><code>AHPR</code> - Average Holding Period Return</li>
+                    <li><code>ZScore</code> - Z-Score statistical measure</li>
+                    <li><code>ZProbability</code> - Z-Score probability</li>
+                    <li><code>Expectancy</code> - Expected value per trade</li>
+                    <li><code>StandardDev</code> - Standard deviation</li>
+                    <li><code>Exposure</code> - Market exposure percentage</li>
+                    <li><code>ExposurePosition</code> - Position exposure</li>
+                    <li><code>StagnationPeriod</code> - Stagnation period (number of bars)</li>
+                    <li><code>StagnationPeriodPct</code> - Stagnation period percentage</li>
+                    <li><code>StagnationFrom</code> - Stagnation period start (bar index)</li>
+                    <li><code>StagnationTo</code> - Stagnation period end (bar index)</li>
+                    <li><code>DegreesOfFreedom</code> - Degrees of freedom</li>
+                    <li><code>TotalTradingDays</code> - Total number of trading days</li>
+                    <li><code>TotalTradingMonths</code> - Total number of trading months</li>
+                    <li><code>TotalTradingYears</code> - Total number of trading years</li>
+                    <li><code>ProfitableMonths</code> - Number of profitable months</li>
+                    <li><code>NumberOfProfits</code> - Number of winning trades</li>
+                    <li><code>NumberOfLosses</code> - Number of losing trades</li>
+                    <li><code>NumberOfCanceled</code> - Number of canceled trades</li>
+                    <li><code>GrossProfit</code> - Total gross profit</li>
+                    <li><code>GrossLoss</code> - Total gross loss</li>
+                    <li><code>AvgWin</code> - Average winning trade</li>
+                    <li><code>AvgLoss</code> - Average losing trade</li>
+                    <li><code>MaxProfit</code> - Maximum profit in a single trade</li>
+                    <li><code>MaxLoss</code> - Maximum loss in a single trade</li>
+                    <li><code>MaxConsecWins</code> - Maximum consecutive wins</li>
+                    <li><code>MaxConsecLoss</code> - Maximum consecutive losses</li>
+                    <li><code>AvgConsecWin</code> - Average consecutive wins</li>
+                    <li><code>AvgConsecLoss</code> - Average consecutive losses</li>
+                    <li><code>AvgBarsWin</code> - Average bars in winning trades</li>
+                    <li><code>AvgBarsLoss</code> - Average bars in losing trades</li>
+                    <li><code>Commission</code> - Total commission costs</li>
+                    <li><code>SlippageInMoney</code> - Total slippage costs in currency</li>
+                    <li><code>CommSwapInMoney</code> - Total commission and swap costs in currency</li>
+                    <li><code>MaxNewHighDurationFrom</code> - Max new high duration start (bar index)</li>
+                    <li><code>MaxNewHighDurationTo</code> - Max new high duration end (bar index)</li>
+                    <li><code>MaxNewHighDurationPeriod</code> - Max new high duration period (bars)</li>
+                    <li><code>MaxNewHighDurationPct</code> - Max new high duration percentage</li>
+                </ul>
+                
+                <h3>Available Order Fields</h3>
+                <p>When you receive <code>ORDERS_RESPONSE</code>, the orders array contains objects with:</p>
+                <ul>
+                    <li><code>Ticket</code> - Order ticket number</li>
+                    <li><code>Symbol</code> - Trading symbol</li>
+                    <li><code>ResultName</code> - Setup/result name</li>
+                    <li><code>NumberOfTrade</code> - Order number in sequence</li>
+                    <li><code>OpenTime</code> - Order open time (timestamp)</li>
+                    <li><code>CloseTime</code> - Order close time (timestamp)</li>
+                    <li><code>OriginalOpenTime</code> - Original order open time (for pending orders)</li>
+                    <li><code>Type</code> - Order type (byte constant: 0=Any, 1=Buy, 2=Sell, 3=BuyLimit, 4=SellLimit, 5=BuyStop, 6=SellStop, 7=BuyStopLimit, 8=SellStopLimit, 9=Deposit, 10=Withdrawal, 11=Balance, 100=BuyToCoverStop, 101=BuyToCoverLimit, 102=SellToCoverStop, 103=SellToCoverLimit)</li>
+                    <li><code>CloseType</code> - How the order was closed (byte constant: 1=Manual, 2=SL, 3=PT, 4=EndTest, 5=End Of Day, 6=Expired, 7=Reversed, 8=Deleted, 9=Replaced, 11=OCA, 12=Commission, 13=End Of Day (Time), 14=End Of Friday, 16=End Of Friday (Time), 17=End Of Range, 18=Control order, 19=Exit After X Bars, 20=MoveSL2BE, 21=TrailingStop, 22=Exit Signal, 55=End Of Day (Next Market Open), 60=Delisted)</li>
+                    <li><code>SampleType</code> - Sample type (byte constant: 127=Full, 10=In-Sample, 20=Out-of-Sample)</li>
+                    <li><code>OpenPrice</code> - Order open price</li>
+                    <li><code>ClosePrice</code> - Order close price</li>
+                    <li><code>OriginalOpenPrice</code> - Original order open price (for pending orders)</li>
+                    <li><code>SLLevel</code> - Stop Loss price level</li>
+                    <li><code>PTLevel</code> - Profit Target price level</li>
+                    <li><code>Size</code> - Order size (lot size)</li>
+                    <li><code>BarsInTrade</code> - Number of bars the order was open</li>
+                    <li><code>TimeInTrade</code> - Duration in seconds</li>
+                    <li><code>ProfitLoss</code> - Profit/Loss in currency (same as PL)</li>
+                    <li><code>ProfitLossPct</code> - Profit/Loss as percentage</li>
+                    <li><code>ProfitLossPips</code> - Profit/Loss in pips</li>
+                    <li><code>Drawdown</code> - Drawdown at order close (same as DD)</li>
+                    <li><code>PctDrawdown</code> - Drawdown as percentage</li>
+                    <li><code>MAE</code> - Maximum Adverse Excursion (in currency)</li>
+                    <li><code>MAEPips</code> - Maximum Adverse Excursion in pips</li>
+                    <li><code>MFE</code> - Maximum Favorable Excursion (in currency)</li>
+                    <li><code>MFEPips</code> - Maximum Favorable Excursion in pips</li>
+                    <li><code>Comment</code> - Order comment</li>
+                    <li><code>CommSwap</code> - Commission and swap costs</li>
+                    <li><code>SlippageInMoney</code> - Slippage in currency</li>
+                    <li><code>Balance</code> - Account balance after order close</li>
+                </ul>
+                <p><strong>Note:</strong> Some fields may be <code>null</code> or have default values (e.g., <code>NOT_DEFINED = -99999999</code>) if not applicable to the order.</p>
+            </div>
+
+            <div class="example-section">
+                <h2>💡 Basic Example</h2>
+                <p>Below is a working example that requests stats, orders, and last settings XML, and displays the responses in text areas.</p>
+                
+                <div class="response-area">
+                    <label for="strategyDataResponse">Strategy Data:</label>
+                    <textarea id="strategyDataResponse" readonly>No data received yet...</textarea>
+                </div>
+
+                <div class="response-area">
+                    <label for="statsResponse">Stats Response:</label>
+                    <textarea id="statsResponse" readonly>No data received yet...</textarea>
+                </div>
+
+                <div class="response-area">
+                    <label for="ordersResponse">Orders Response:</label>
+                    <textarea id="ordersResponse" readonly>No data received yet...</textarea>
+                </div>
+
+                <div class="response-area">
+                    <label for="settingsResponse">Last Settings XML Response:</label>
+                    <textarea id="settingsResponse" readonly>No data received yet...</textarea>
+                </div>
+
+                <div class="response-area">
+                    <label>Pseudo Code:</label>
+                    <textarea id="pseudocodeResponse" readonly>No data received yet...</textarea>
+                </div>
+
+                <div class="response-area">
+                    <label for="symbolInfoResponse">Symbol Info (EURUSD_M1_dukas):</label>
+                    <textarea id="symbolInfoResponse" readonly>No data received yet...</textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Listen for PostMessage events from parent window
+        window.addEventListener('message', function(event) {
+            console.log('Received event:', event);
+
+            if (event.data.type === 'STRATEGY_DATA') {
+                console.log('STRATEGY_DATA', event.data.data);
+                var strategyDataTextArea = document.getElementById('strategyDataResponse');
+                if (strategyDataTextArea) {
+                    strategyDataTextArea.value = JSON.stringify(event.data.data, null, 2);
+                }
+            }
+
+            if (event.data.type === 'STATS_RESPONSE') {
+                console.log('STATS_RESPONSE', event.data.data);
+                var statsTextArea = document.getElementById('statsResponse');
+                if (statsTextArea) {
+                    statsTextArea.value = JSON.stringify(event.data.data, null, 2);
+                }
+            }
+
+            if (event.data.type === 'ORDERS_RESPONSE') {
+                console.log('ORDERS_RESPONSE', event.data.data);
+                var ordersTextArea = document.getElementById('ordersResponse');
+                if (ordersTextArea) {
+                    ordersTextArea.value = JSON.stringify(event.data.data, null, 2);
+                }
+            }
+
+            if (event.data.type === 'LAST_SETTINGS_XML_RESPONSE') {
+                console.log('LAST_SETTINGS_XML_RESPONSE', event.data.data);
+                var settingsTextArea = document.getElementById('settingsResponse');
+                if (settingsTextArea && event.data.data && event.data.data.lastSettingsXml) {
+                    settingsTextArea.value = event.data.data.lastSettingsXml;
+                } else if (settingsTextArea) {
+                    settingsTextArea.value = JSON.stringify(event.data.data, null, 2);
+                }
+            }
+
+            if (event.data.type === 'SOURCE_CODE_RESPONSE') {
+                console.log('SOURCE_CODE_RESPONSE', event.data.data);
+                var data = event.data.data || {};
+                var codeStr = (data.code != null) ? data.code : JSON.stringify(data, null, 2);
+                var pseudoTextArea = document.getElementById('pseudocodeResponse');
+                if (pseudoTextArea) pseudoTextArea.value = codeStr;
+            }
+
+            if (event.data.type === 'SYMBOL_INFO_RESPONSE') {
+                console.log('SYMBOL_INFO_RESPONSE', event.data.data);
+                var symbolInfoTextArea = document.getElementById('symbolInfoResponse');
+                if (symbolInfoTextArea) {
+                    symbolInfoTextArea.value = JSON.stringify(event.data.data, null, 2);
+                }
+            }
+            
+            // Handle theme changes
+            if (event.data.type === 'SET_THEME') {
+                var theme = event.data.theme; // 'dark' or 'light'
+                if (theme === 'dark') {
+                    document.body.classList.add('dark-theme');
+                } else {
+                    document.body.classList.remove('dark-theme');
+                }
+            }
+        });
+
+        // Request stats when strategy is selected
+        function requestData() {
+            console.log('GET_STATS ...');
+            window.parent.postMessage({
+                type: 'GET_STATS',
+                params: {
+                    resultKey: 'Portfolio',
+                    direction: 0,
+                    sampleType: 127,
+                    plType: 10
+                }
+            }, '*');
+
+            console.log('GET_ORDERS ...');
+            window.parent.postMessage({
+                type: 'GET_ORDERS',
+                params: {
+                    resultKey: 'Portfolio',
+                    direction: 0,
+                    sampleType: 127
+                }
+            }, '*');
+
+            console.log('GET_LAST_SETTINGS_XML ...');
+            window.parent.postMessage({
+                type: 'GET_LAST_SETTINGS_XML',
+                params: {}
+            }, '*');
+
+            console.log('GET_SOURCE_CODE (pseudo) ...');
+            window.parent.postMessage({
+                type: 'GET_SOURCE_CODE',
+                params: { format: 'pseudo' }
+            }, '*');
+        }
+
+        // Listen for strategy data to trigger requests
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'STRATEGY_DATA' && event.data.data && event.data.data.strategyName) {
+                requestData();
+                // Request symbol info for EURUSD_M1_dukas on strategy change (event.data.data is the symbol object or null)
+                window.parent.postMessage({ type: 'GET_SYMBOL_INFO', symbol: 'EURUSD_M1_dukas' }, '*');
+            }
+            
+            // Handle theme changes
+            if (event.data && event.data.type === 'SET_THEME') {
+                var theme = event.data.theme; // 'dark' or 'light'
+                if (theme === 'dark') {
+                    document.body.classList.add('dark-theme');
+                } else {
+                    document.body.classList.remove('dark-theme');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+

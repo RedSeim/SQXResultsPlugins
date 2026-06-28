@@ -1,0 +1,24 @@
+{
+  "title": "Analyse der Erfolgswahrscheinlichkeit",
+  "subtitle": "Monte-Carlo-Simulation der Wahrscheinlichkeit, dass deine Strategie eine Herausforderung besteht.",
+  "parameters": "Parameter",
+  "startEquity": "Startkapital",
+  "winRate": "Gewinnquote",
+  "riskPerTrade": "Risiko pro Trade",
+  "rewardToRisk": "Chance-Risiko-Verhältnis (R)",
+  "profitTarget": "Gewinnziel",
+  "maxDrawdown": "Maximaler Drawdown",
+  "simulations": "Simulationen",
+  "tradesPerSim": "Trades pro Simulation",
+  "runSimulation": "Simulation starten",
+  "passProbability": "Erfolgswahrscheinlichkeit",
+  "riskOfRuin": "Insolvenzrisiko",
+  "target": "ZIEL",
+  "maxDd": "MAX DD",
+  "start": "START",
+  "switchTheme": "Design wechseln",
+  "introTooltipHtml": "StrategyQuant hilft dir mit einer Monte-Carlo-Simulation, die Wahrscheinlichkeit abzuschätzen, eine Prop-Firm-Herausforderung zu bestehen oder ein Drawdown-Limit zu erreichen – basierend auf der Gewinnquote deiner Strategie, dem Chance-Risiko-Verhältnis und dem Risiko pro Trade.<br><br><strong>Praktisches Beispiel:</strong><br>Wenn deine Strategie eine 50% Gewinnquote hat und ein 1:2 RRR nutzt und du pro Trade 1% riskierst, um ein 10% Gewinnziel zu erreichen, ohne einen 10% Drawdown zu erreichen:<ol style=\"margin: 5px 0 0 15px; padding: 0;\"><li>Gib diese Werte in die Parameter ein.</li><li>Starte die Simulation (z. B. 1000-mal).</li><li>Wenn die 'Erfolgswahrscheinlichkeit' 70% beträgt, bedeutet das: In 700 von 1000 simulierten 'Welten' hat deine Strategie das Ziel erreicht, bevor das Drawdown-Limit erreicht wurde.</li></ol><br><em>Hinweis: Das ist statistische Mathematik basierend auf zufälligen Trade-Sequenzen (Monte-Carlo-Sampling).</em>",
+  "disclaimerHtml": "Diese Analyse dient ausschließlich Informations- und Schulungszwecken innerhalb von StrategyQuant X. Sie stellt keine Finanz-, Anlage- oder Handelsberatung dar. Alle Ergebnisse, einschließlich Backtests und Simulationen, basieren auf historischen Daten und hypothetischer Performance und spiegeln möglicherweise nicht die zukünftigen Marktbedingungen wider. Vergangene Performance ist kein Hinweis auf zukünftige Ergebnisse. Handel beinhaltet ein erhebliches Risiko und du solltest deine eigenen unabhängigen Recherchen durchführen sowie vor jeder Investitions- oder Handelsentscheidung einen zugelassenen Finanzberater konsultieren. <strong>Dieses Tool nutzt statistische Mathematik auf Basis historischer Sequenzen; die tatsächliche Marktausführung kann deutlich abweichen.</strong>",
+  "noStrategySelected": "Keine Strategie ausgewählt"
+}
+

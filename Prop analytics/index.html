@@ -1,0 +1,1621 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PropAnalytics</title>
+    <!-- Use local Vue.js build as required by SQX offline environments -->
+    <script src="vue.global.prod.js"></script>
+    <style>
+        /* ===================================================================
+           CSS Variables & Theming Strategy
+           =================================================================== */
+        :root {
+            /* Light Skin (Default) - Based on SQX Batch1 */
+            --bg-body: #F4F6F9;
+            --bg-surface: #FFFFFF;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --border-color: #E0E0E0;
+            --primary: #337ab7;
+            /* Native SQX Blue */
+            --primary-hover: #286090;
+            --danger: #dc3545;
+            --success: #28a745;
+            --warning: #ffc107;
+            --info: #17a2b8;
+            --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] {
+            /* Dark Skin - Based on SQX Batch1 */
+            --bg-body: #1e1e1e;
+            --bg-surface: #2d2d2d;
+            --text-main: #e0e0e0;
+            --text-muted: #aaaaaa;
+            --border-color: #444444;
+            --primary: #337ab7;
+            /* Brighter blue for dark mode */
+            --primary-hover: #4090d0;
+            --card-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        /* ===================================================================
+           Global Box Sizing & Layout Constraints (SKILL.md)
+           =================================================================== */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            /* CRITICAL: Perfect bounds fitting for SQX plugin iframe */
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #app {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        /* ===================================================================
+           Component Styles
+           =================================================================== */
+        .header {
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        .header h1 {
+            margin: 0 0 5px 0;
+            font-size: 24px;
+            font-weight: 500;
+        }
+
+        .header p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .dashboard {
+            display: flex;
+            gap: 20px;
+            flex-grow: 1;
+            min-height: 0;
+            /* Crucial for preventing flex children from expanding grid */
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--card-shadow);
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        [data-theme="dark"] .sidebar-header {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .sidebar-content {
+            padding: 15px;
+            overflow-y: visible;
+            /* Changed from auto to prevent clipping tooltips */
+            flex-grow: 1;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .main-content {
+            flex-grow: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-auto-rows: min-content;
+            align-items: start;
+            align-content: start;
+            gap: 20px;
+            overflow-y: auto;
+            min-height: 0;
+            /* Force scrollbar */
+            padding-right: 10px;
+            /* Space for scrollbar */
+        }
+
+        /* Metric Cards */
+        .card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-title {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .metric-sub {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* Status Colors */
+        .text-success {
+            color: var(--success);
+        }
+
+        .text-danger {
+            color: var(--danger);
+        }
+
+        .text-warning {
+            color: var(--warning);
+        }
+
+        .text-info {
+            color: var(--info);
+        }
+
+        .badge {
+            font-size: 11px;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .badge-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .badge-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .badge-warning {
+            background: var(--warning);
+            color: #000;
+        }
+
+        /* Custom Tooltips */
+        .tooltip-container {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            margin-left: 6px;
+            cursor: help;
+            z-index: 50;
+        }
+
+        .tooltip-container:hover {
+            z-index: 999;
+        }
+
+        .tooltip-icon {
+            width: 14px;
+            height: 14px;
+            fill: var(--text-muted);
+            transition: fill 0.2s;
+        }
+
+        .tooltip-container:hover .tooltip-icon {
+            fill: var(--text-main);
+        }
+
+        .tooltip-content {
+            visibility: hidden;
+            opacity: 0;
+            width: 220px;
+            background-color: var(--bg-surface);
+            color: var(--text-main);
+            text-align: left;
+            border-radius: 4px;
+            padding: 10px;
+            position: absolute;
+            z-index: 100;
+            top: 125%;
+            bottom: auto;
+            left: 50%;
+            margin-left: -110px;
+            font-size: 12px;
+            font-weight: normal;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: opacity 0.2s, visibility 0.2s;
+            pointer-events: none;
+            line-height: 1.4;
+        }
+
+        .tooltip-content::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: var(--border-color) transparent transparent transparent;
+        }
+
+        .tooltip-container:hover .tooltip-content {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Chart Container Guidelines */
+        .chart-container {
+            position: relative;
+            flex-grow: 1;
+            min-height: 150px;
+            width: 100%;
+        }
+
+        .chart-container canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .graph-placeholder {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            color: var(--text-muted);
+            font-weight: 600;
+            background: rgba(244, 246, 249, 0.65);
+            z-index: 5;
+            border-radius: 4px;
+            pointer-events: none;
+        }
+
+        [data-theme="dark"] .graph-placeholder {
+            background: rgba(30, 30, 30, 0.6);
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-body);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Tooltip Grid Positioning */
+        .tooltip-pos-left .tooltip-content {
+            left: 0;
+            margin-left: -15px;
+        }
+
+        .tooltip-pos-left .tooltip-content::after {
+            left: 20px;
+        }
+
+        .tooltip-pos-center .tooltip-content {
+            left: 50%;
+            margin-left: -140px;
+        }
+
+        .tooltip-pos-center .tooltip-content::after {
+            left: 50%;
+        }
+
+        .tooltip-pos-right .tooltip-content {
+            left: auto;
+            right: 0;
+            margin-right: -15px;
+        }
+
+        .tooltip-pos-right .tooltip-content::after {
+            left: auto;
+            right: 20px;
+        }
+
+        /* Disclaimer Styling */
+        .disclaimer {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            text-align: justify;
+            flex-shrink: 0;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 6px 12px;
+            margin-bottom: 0;
+            font-size: 14px;
+            font-weight: 400;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            user-select: none;
+        }
+
+        .btn-primary {
+            color: #fff;
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <!-- Header -->
+        <div class="header">
+            <h1>{{ t('title') }}</h1>
+            <p>{{ t('subtitle') }}</p>
+        </div>
+
+        <div class="dashboard">
+            <!-- Sidebar: Inputs -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h2>{{ t('strategyParameters') }}</h2>
+                </div>
+
+                <div class="sidebar-content">
+                    <div class="form-group">
+                        <div style="display: flex; align-items: center;">
+                            <label style="margin-bottom: 0;">{{ t('postStreakThresholdLabel') }}</label>
+                            <div class="tooltip-container" style="margin-left: 5px; margin-bottom: 5px;">
+                                <svg class="tooltip-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                                </svg>
+                                <div class="tooltip-content"
+                                    style="bottom: auto; top: -10px; left: 100%; margin-left: 15px; width: 260px;"
+                                    v-html="tHtml('postStreakThresholdTooltipHtml')"></div>
+                            </div>
+                        </div>
+                        <input type="number" class="form-control" v-model.number="params.postStreakThreshold" min="1"
+                            step="1">
+                        <small
+                            style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">{{ t('lossesBeforeDeploymentEdge') }}</small>
+                    </div>
+
+                    <div class="form-group">
+                        <div style="display: flex; align-items: center;">
+                            <label style="margin-bottom: 0;">{{ t('startingCapitalLabel') }}</label>
+                            <div class="tooltip-container" style="margin-left: 5px; margin-bottom: 5px;">
+                                <svg class="tooltip-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                                </svg>
+                                <div class="tooltip-content"
+                                    style="bottom: auto; top: -10px; left: 100%; margin-left: 15px; width: 260px;"
+                                    v-html="tHtml('startingCapitalTooltipHtml')"></div>
+                            </div>
+                        </div>
+                        <input type="number" class="form-control" v-model.number="params.startingCapital">
+                    </div>
+
+                    <div class="form-group">
+                        <div style="display: flex; align-items: center;">
+                            <label style="margin-bottom: 0;">{{ t('dailyDdLimitLabel') }}</label>
+                            <div class="tooltip-container" style="margin-left: 5px; margin-bottom: 5px;">
+                                <svg class="tooltip-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                                </svg>
+                                <div class="tooltip-content"
+                                    style="bottom: auto; top: -10px; left: 100%; margin-left: 15px; width: 260px;"
+                                    v-html="tHtml('dailyDdLimitTooltipHtml')"></div>
+                            </div>
+                        </div>
+                        <input type="number" class="form-control" v-model.number="params.dailyDdLimitPct" min="0.1"
+                            step="0.5">
+                    </div>
+
+                    <div class="form-group">
+                        <div style="display: flex; align-items: center;">
+                            <label style="margin-bottom: 0;">{{ t('contractSizeLabel') }}</label>
+                            <div class="tooltip-container" style="margin-left: 5px; margin-bottom: 5px;">
+                                <svg class="tooltip-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                                </svg>
+                                <div class="tooltip-content"
+                                    style="bottom: auto; top: -10px; left: 100%; margin-left: 15px; width: 260px;"
+                                    v-html="tHtml('contractSizeTooltipHtml')"></div>
+                            </div>
+                        </div>
+                        <input type="number" class="form-control" v-model.number="params.contractSize">
+                    </div>
+
+                    <div class="form-group">
+                        <div style="display: flex; align-items: center;">
+                            <label style="margin-bottom: 0;">{{ t('maxAllowedLeverageLabel') }}</label>
+                            <div class="tooltip-container" style="margin-left: 5px; margin-bottom: 5px;">
+                                <svg class="tooltip-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                                </svg>
+                                <div class="tooltip-content"
+                                    style="bottom: auto; top: -10px; left: 100%; margin-left: 15px; width: 260px;"
+                                    v-html="tHtml('maxAllowedLeverageTooltipHtml')"></div>
+                            </div>
+                        </div>
+                        <input type="number" class="form-control" v-model.number="params.allowedLeverage">
+                    </div>
+
+                    <div style="margin-top: 15px;">
+                        <button class="btn btn-primary btn-block" @click="handleRecalculate">{{ t('recalculateStatistics') }}</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content: Metric Cards -->
+            <div class="main-content">
+
+                <!-- 0. Prop Firm Constraints (NEW) -->
+                <div class="card" style="grid-column: 1 / -1;">
+                    <div class="card-header">
+                        <div style="display: flex; align-items: center;">
+                            <h3 class="card-title">{{ t('constraintsCardTitle') }}</h3>
+                            <div class="tooltip-container tooltip-pos-left">
+                                <svg class="tooltip-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                                </svg>
+                                <div class="tooltip-content" style="width: 280px;" v-html="tHtml('constraintsTooltipHtml')"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+
+                        <!-- Daily MAE -->
+                        <div>
+                            <div style="display: flex; align-items: center;">
+                                <div class="metric-sub" style="margin-bottom: 5px;">{{ t('metricMaxDailyDrawdownLabel') }}</div>
+                                <div class="tooltip-container tooltip-pos-left"
+                                    style="margin-left: 5px; margin-bottom: 5px;">
+                                    <svg class="tooltip-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                                    </svg>
+                                    <div class="tooltip-content" style="width: 280px;" v-html="tHtml('metricMaxDailyDrawdownTooltipHtml')"></div>
+                                </div>
+                            </div>
+                            <div class="metric-value text-danger" style="font-size: 24px;">
+                                -{{ metrics.maxDailyDdPct.toFixed(2) }}%
+                            </div>
+                        </div>
+
+                        <!-- Headroom -->
+                        <div>
+                            <div style="display: flex; align-items: center;">
+                                <div class="metric-sub" style="margin-bottom: 5px;">{{ t('metricDailyLimitHeadroomLabel') }}</div>
+                                <div class="tooltip-container tooltip-pos-center"
+                                    style="margin-left: 5px; margin-bottom: 5px;">
+                                    <svg class="tooltip-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                                    </svg>
+                                    <div class="tooltip-content" style="width: 280px;" v-html="tHtml('metricDailyLimitHeadroomTooltipHtml')"></div>
+                                </div>
+                            </div>
+                            <div class="metric-value"
+                                :class="metrics.dailyDdHeadroomPct > 2.0 ? 'text-success' : (metrics.dailyDdHeadroomPct > 0 ? 'text-warning' : 'text-danger')"
+                                style="font-size: 24px;">
+                                {{ metrics.dailyDdHeadroomPct.toFixed(2) }}%
+                            </div>
+                        </div>
+
+                        <!-- Consistency -->
+                        <div>
+                            <div style="display: flex; align-items: center;">
+                                <div class="metric-sub" style="margin-bottom: 5px;">{{ t('metricConsistencyRuleComplianceLabel') }}</div>
+                                <div class="tooltip-container tooltip-pos-right"
+                                    style="margin-left: 5px; margin-bottom: 5px;">
+                                    <svg class="tooltip-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                                    </svg>
+                                    <div class="tooltip-content" style="width: 280px;" v-html="tHtml('metricConsistencyRuleComplianceTooltipHtml')"></div>
+                                </div>
+                            </div>
+                            <div class="metric-value"
+                                :class="metrics.consistencyPct < 30 ? 'text-success' : (metrics.consistencyPct < 50 ? 'text-warning' : 'text-danger')"
+                                style="font-size: 24px;">
+                                {{ metrics.consistencyPct.toFixed(1) }}%
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- 1. Min/Max Daily -->
+                <div class="card" style="grid-column: 1 / -1; min-height: 250px;">
+                    <div class="card-header">
+                        <div style="display: flex; align-items: center;">
+                            <h3 class="card-title">{{ t('dailyProfitLossCardTitle') }}</h3>
+                            <div class="tooltip-container">
+                                <svg class="tooltip-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                                </svg>
+                                <div class="tooltip-content" v-html="tHtml('dailyProfitLossTooltipHtml')"></div>
+                            </div>
+                        </div>
+                        <div style="font-size: 13px; font-weight: 500;">
+                            <span class="text-success" style="margin-right: 15px;">{{ t('bestDayLabel') }} +{{
+                                metrics.bestDay.toFixed(2) }}</span>
+                            <span class="text-danger">{{ t('worstDayLabel') }} {{ metrics.worstDay.toFixed(2) }}</span>
+                        </div>
+                    </div>
+                    <div class="chart-container" ref="chartContainer">
+                        <canvas ref="pnlChart"></canvas>
+                        <div v-if="!simulationComputed" class="graph-placeholder">
+                            {{ t('noStrategySelected') }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Leverage Tracking -->
+                <div class="card">
+                    <div class="card-header">
+                        <div style="display: flex; align-items: center;">
+                            <h3 class="card-title">{{ t('marginLeverageRiskCardTitle') }}</h3>
+                            <div class="tooltip-container">
+                                <svg class="tooltip-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                                </svg>
+                                <div class="tooltip-content" v-html="tHtml('marginLeverageRiskTooltipHtml')"></div>
+                            </div>
+                        </div>
+                        <span v-if="!strategyInfo.isPortfolio" class="badge"
+                            :class="metrics.leverageExceeded ? 'badge-danger' : 'badge-success'">
+                            {{ metrics.leverageExceeded ? t('breachedLabel') : t('safeLabel') }}
+                        </span>
+                    </div>
+
+                    <template v-if="!strategyInfo.isPortfolio">
+                        <div>
+                            <div class="metric-sub"
+                                style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span>{{ t('historicalTrueLeverageLabel') }}</span>
+                                <span class="text-danger" v-if="metrics.leverageExceeded"
+                                    style="font-weight: 500;">{{ t('peakLabel') }}
+                                    1:{{ metrics.peakLeverage.toFixed(2) }}</span>
+                                <span class="text-success" v-else style="font-weight: 500;">{{ t('peakLabel') }} 1:{{
+                                    metrics.peakLeverage.toFixed(2) }}</span>
+                            </div>
+                            <div class="metric-sub" style="margin-bottom: 0px;">{{ t('limitLabel') }} 1:{{
+                                params.allowedLeverage }}</div>
+                        </div>
+                        <div class="chart-container" ref="leverageContainer"
+                            style="min-height: 80px; margin-top: 10px;">
+                            <canvas ref="leverageChart"></canvas>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <div
+                            style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 500;">
+                            {{ t('portfolioMarginLeverageUnsupported') }}
+                        </div>
+                    </template>
+                </div>
+
+                <!-- 3. Losing Streak / When to Deploy -->
+                <div class="card">
+                    <div class="card-header">
+                        <div style="display: flex; align-items: center;">
+                            <h3 class="card-title">{{ t('postStreakEdgeCardTitle') }}</h3>
+                            <div class="tooltip-container tooltip-pos-left">
+                                <svg class="tooltip-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                                </svg>
+                                <div class="tooltip-content" style="width: 280px;" v-html="tHtml('postStreakEdgeTooltipHtml')"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="metric-sub">{{ t('completeHistoryBaselineLabel') }}</div>
+                        <div class="metric-value" style="font-size: 16px;">
+                            {{ metrics.baselineReturn > 0 ? '+' : '' }}{{ metrics.baselineReturn.toFixed(2) }}
+                        </div>
+                        <div class="metric-sub" style="margin-top: 5px;">{{
+                                t('avgReturnAfterLossesLabel', { threshold: params.postStreakThreshold })
+                            }}</div>
+                        <div class="metric-value">
+                            {{ metrics.postStreakReturn > 0 ? '+' : '' }}{{ metrics.postStreakReturn.toFixed(2) }}
+                        </div>
+
+                        <div class="metric-sub"
+                            style="margin-top: 10px; border-top: 1px dotted var(--border-color); padding-top: 5px;">
+                            <strong>{{ t('calculatedEdgeLabel') }}</strong>
+                        </div>
+                        <div class="metric-value" :class="metrics.streakEdge > 0 ? 'text-success' : 'text-danger'"
+                            style="font-size: 20px; margin-bottom: 15px;">
+                            {{ metrics.streakEdge > 0 ? '+' : '' }}{{ metrics.streakEdge.toFixed(2) }}
+                        </div>
+
+                        <!-- New: Post-Streak Win Rate -->
+                        <div class="metric-sub" style="margin-top: 5px;">
+                            {{ t('winRateAfterLossesLabel', { threshold: params.postStreakThreshold }) }}
+                        </div>
+                        <div class="metric-value" style="font-size: 16px; margin-bottom: 10px;"
+                            :class="metrics.postStreakWinRate >= 50 ? 'text-success' : 'text-danger'">
+                            {{ metrics.postStreakWinRate.toFixed(1) }}%
+                        </div>
+
+                        <!-- New: Recovery Time -->
+                        <div class="metric-sub" style="margin-top: 5px;">{{ t('avgRecoveryLabel') }}</div>
+                        <div class="metric-value" style="font-size: 16px; margin-bottom: 15px;">
+                            {{ metrics.avgRecoveryDays.toFixed(1) }} {{ t('daysLabel') }}
+                        </div>
+
+                        <div class="metric-sub"
+                            style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span>{{ t('streakFrequenciesLabel', { avgLossStreak: metrics.avgLossStreak.toFixed(1) }) }}</span>
+                            <div style="text-align: right;">
+                                <span v-if="metrics.mostCommonStreak > 0" class="text-info"
+                                    style="font-weight: 500; display: block;">
+                                    {{ t('lossModeLabel') }} {{ metrics.mostCommonStreak }} {{
+                                        metrics.mostCommonStreak === 1 ? t('lossSingularLabel') : t('lossPluralLabel')
+                                    }}
+                                </span>
+                                <span v-if="metrics.mostCommonWinStreak > 0" class="text-success"
+                                    style="font-weight: 500; display: block; margin-top: 2px;">
+                                    {{ t('winModeLabel') }} {{ metrics.mostCommonWinStreak }} {{
+                                        metrics.mostCommonWinStreak === 1 ? t('winSingularLabel') : t('winPluralLabel')
+                                    }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="chart-container" ref="streakContainer" style="min-height: 80px;">
+                            <canvas ref="streakChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Max DD Duration -->
+                <div class="card">
+                    <div class="card-header">
+                        <div style="display: flex; align-items: center;">
+                            <h3 class="card-title">{{ t('drawdownDurationCardTitle') }}</h3>
+                            <div class="tooltip-container">
+                                <svg class="tooltip-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                                </svg>
+                                <div class="tooltip-content" v-html="tHtml('drawdownDurationTooltipHtml')"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="metric-sub">{{ t('longestTimeUnderWaterLabel') }}</div>
+                        <div class="metric-value">{{ metrics.maxDdDurationDays }} <span
+                                style="font-size: 16px; font-weight: normal;">{{ t('daysLabel') }}</span></div>
+                    </div>
+                </div>
+
+                <!-- 5. Duration (Win vs Loss) -->
+                <div class="card">
+                    <div class="card-header">
+                        <div style="display: flex; align-items: center;">
+                            <h3 class="card-title">{{ t('holdingTimeBehaviorCardTitle') }}</h3>
+                            <div class="tooltip-container">
+                                <svg class="tooltip-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                                </svg>
+                                <div class="tooltip-content" v-html="tHtml('holdingTimeBehaviorTooltipHtml')"></div>
+                            </div>
+                        </div>
+                        <span v-if="metrics.losersHeldLonger" class="badge badge-warning">{{ t('flaggedLabel') }}</span>
+                    </div>
+                    <div>
+                        <div class="metric-sub">{{ t('avgWinningTradeLabel') }}</div>
+                        <div class="metric-value" style="font-size: 20px;">{{ metrics.avgWinDuration.toFixed(1) }} {{
+                            t('hoursLabel')
+                        }}
+                        </div>
+                        <div class="metric-sub" style="margin-top: 10px;">{{ t('avgLosingTradeLabel') }}</div>
+                        <div class="metric-value" style="font-size: 20px;">{{ metrics.avgLossDuration.toFixed(1) }} {{
+                            t('hoursLabel')
+                        }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. Consistency Score -->
+                <div class="card">
+                    <div class="card-header">
+                        <div style="display: flex; align-items: center;">
+                            <h3 class="card-title">{{ t('consistencyScoreCardTitle') }}</h3>
+                            <div class="tooltip-container">
+                                <svg class="tooltip-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                                </svg>
+                                <div class="tooltip-content" v-html="tHtml('consistencyScoreTooltipHtml')"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="metric-sub">{{ t('profitableDaysLabel') }}</div>
+                        <div class="metric-value">{{ metrics.profitableDaysPct.toFixed(1) }}%</div>
+                        <div class="metric-sub" style="margin-top: 10px;">{{ t('monthlyStdDevLabel') }}</div>
+                        <div class="metric-value" style="font-size: 20px;">{{ metrics.monthlyStdDev.toFixed(2) }}</div>
+                    </div>
+                </div>
+
+                <!-- 7. VaR & CVaR -->
+                <div class="card">
+                    <div class="card-header">
+                        <div style="display: flex; align-items: center;">
+                            <h3 class="card-title">{{ t('tailRiskCardTitle') }}</h3>
+                            <div class="tooltip-container">
+                                <svg class="tooltip-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                                </svg>
+                                <div class="tooltip-content" v-html="tHtml('tailRiskTooltipHtml')"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="metric-sub">{{ t('valueAtRiskLabel') }}</div>
+                        <div class="metric-value text-danger">{{ metrics.var95.toFixed(2) }}</div>
+                        <div class="metric-sub" style="margin-top: 10px;">{{ t('expectedShortfallLabel') }}</div>
+                        <div class="metric-value text-danger" style="font-size: 20px;">{{ metrics.cvar95.toFixed(2) }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 8. Regime Analysis -->
+                <div class="card">
+                    <div class="card-header">
+                        <div style="display: flex; align-items: center;">
+                            <h3 class="card-title">{{ t('regimePerformanceCardTitle') }}</h3>
+                            <div class="tooltip-container">
+                                <svg class="tooltip-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                                </svg>
+                                <div class="tooltip-content" v-html="tHtml('regimePerformanceTooltipHtml')"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="metric-sub">{{ t('bestEnvironmentLabel') }}</div>
+                        <div class="metric-value" style="font-size: 20px;">{{ metrics.bestRegime }}</div>
+                        <div class="metric-sub" style="margin-top: 10px;">{{ t('worstEnvironmentLabel') }}</div>
+                        <div class="metric-value" style="font-size: 20px;">{{ metrics.worstRegime }}</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="disclaimer" v-html="tHtml('disclaimerHtml')"></div>
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        const { createApp, ref, reactive, onMounted, watch } = Vue;
+
+        createApp({
+            setup() {
+                // SQX Theme State
+                const theme = ref('light');
+                const lang = ref('en');
+                        // Used to force re-render when locale JSON is loaded async.
+                        const localeVersion = ref(0);
+
+                // Must be reactive so async locale loading triggers re-render.
+                const messages = reactive({});
+                const loadedLocales = new Set();
+
+                async function loadLocale(localeKey) {
+                    if (!localeKey || loadedLocales.has(localeKey)) return;
+                    try {
+                        const resp = await fetch(`./locales/${localeKey}.json`, { credentials: 'same-origin' });
+                        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                        messages[localeKey] = await resp.json();
+                        loadedLocales.add(localeKey);
+                    } catch (e) {
+                        if (localeKey !== 'en') await loadLocale('en');
+                    }
+                }
+
+                const t = (key, vars) => {
+                    // Touch localeVersion so Vue tracks it during render.
+                    localeVersion.value;
+                    let str = messages[lang.value]?.[key] || messages.en?.[key] || key;
+                    if (vars) {
+                        Object.keys(vars).forEach((name) => {
+                            const token = `{${name}}`;
+                            str = str.split(token).join(String(vars[name]));
+                        });
+                    }
+                    return str;
+                };
+
+                const tHtml = (key, vars) => {
+                    return t(key, vars);
+                };
+
+                const strategyInfo = ref({});
+                const sqxStats = ref(null);
+                const sqxOrders = ref([]);
+                const simulationRequested = ref(false);
+                const simulationComputed = ref(false);
+                const statsReady = ref(false);
+                const ordersReady = ref(false);
+
+                // Chart Engine Refs
+                const pnlChart = ref(null);
+                const chartContainer = ref(null);
+                const streakChart = ref(null);
+                const streakContainer = ref(null);
+                const leverageChart = ref(null);
+                const leverageContainer = ref(null);
+                let resizeObserver = null;
+
+                // User Inputs
+                const params = reactive({
+                    contractSize: 100000,
+                    startingCapital: 100000,
+                    allowedLeverage: 30,
+                    postStreakThreshold: 3,
+                    dailyDdLimitPct: 5.0
+                });
+
+                // Calculated Metrics State
+                const metrics = reactive({
+                    dailySeries: [],
+                    leverageSeries: [],
+                    bestDay: 0,
+                    worstDay: 0,
+                    maxDailyDdPct: 0,
+                    consistencyPct: 0,
+                    dailyDdHeadroomPct: 0,
+                    peakLeverage: 0,
+                    leverageExceeded: false,
+                    postStreakReturn: 0,
+                    baselineReturn: 0,
+                    streakEdge: 0,
+                    postStreakCount: 0,
+                    streakDistribution: [],
+                    postStreakWinRate: 0,
+                    avgRecoveryDays: 0,
+                    avgLossStreak: 0,
+                    winningStreakDistribution: [],
+                    mostCommonWinStreak: 0,
+                    mostCommonStreak: 0,
+                    maxDdDurationDays: 0,
+                    avgWinDuration: 0,
+                    avgLossDuration: 0,
+                    losersHeldLonger: false,
+                    profitableDaysPct: 0,
+                    monthlyStdDev: 0,
+                    var95: 0,
+                    cvar95: 0,
+                    bestRegime: 0,
+                    worstRegime: 0
+                });
+
+                function resetMetricsAndCharts() {
+                    simulationRequested.value = false;
+                    simulationComputed.value = false;
+                    statsReady.value = false;
+                    ordersReady.value = false;
+                    sqxStats.value = null;
+                    sqxOrders.value = [];
+
+                    metrics.dailySeries = [];
+                    metrics.leverageSeries = [];
+                    metrics.bestDay = 0;
+                    metrics.worstDay = 0;
+                    metrics.maxDailyDdPct = 0;
+                    metrics.consistencyPct = 0;
+                    metrics.dailyDdHeadroomPct = 0;
+                    metrics.peakLeverage = 0;
+                    metrics.leverageExceeded = false;
+                    metrics.postStreakReturn = 0;
+                    metrics.baselineReturn = 0;
+                    metrics.streakEdge = 0;
+                    metrics.postStreakCount = 0;
+                    metrics.streakDistribution = [];
+                    metrics.postStreakWinRate = 0;
+                    metrics.avgRecoveryDays = 0;
+                    metrics.avgLossStreak = 0;
+                    metrics.winningStreakDistribution = [];
+                    metrics.mostCommonWinStreak = 0;
+                    metrics.mostCommonStreak = 0;
+                    metrics.maxDdDurationDays = 0;
+                    metrics.avgWinDuration = 0;
+                    metrics.avgLossDuration = 0;
+                    metrics.losersHeldLonger = false;
+                    metrics.profitableDaysPct = 0;
+                    metrics.monthlyStdDev = 0;
+                    metrics.var95 = 0;
+                    metrics.cvar95 = 0;
+                    metrics.bestRegime = 0;
+                    metrics.worstRegime = 0;
+
+                    // Clear canvases to remove stale drawings.
+                    if (pnlChart.value) pnlChart.value.getContext('2d')?.clearRect(0, 0, pnlChart.value.width, pnlChart.value.height);
+                    if (streakChart.value) streakChart.value.getContext('2d')?.clearRect(0, 0, streakChart.value.width, streakChart.value.height);
+                    if (leverageChart.value) leverageChart.value.getContext('2d')?.clearRect(0, 0, leverageChart.value.width, leverageChart.value.height);
+                }
+
+                // ==========================================
+                // Canvas Drawing Engine
+                // ==========================================
+                const drawPnLChart = () => {
+                    if (!pnlChart.value || !chartContainer.value || metrics.dailySeries.length === 0) return;
+
+                    const canvas = pnlChart.value;
+                    const container = chartContainer.value;
+
+                    // Native resolution scaling for sharp HDPI rendering
+                    const rect = container.getBoundingClientRect();
+                    canvas.width = rect.width * window.devicePixelRatio;
+                    canvas.height = rect.height * window.devicePixelRatio;
+                    canvas.style.width = `${rect.width}px`;
+                    canvas.style.height = `${rect.height}px`;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+                    ctx.clearRect(0, 0, rect.width, rect.height);
+
+                    const data = metrics.dailySeries.map(d => d.value);
+                    const maxVal = Math.max(...data, 0);
+                    const minVal = Math.min(...data, 0);
+
+                    // Add 10% padding to bounds
+                    const range = (maxVal - minVal) || 1;
+                    const chartTop = maxVal + (range * 0.1);
+                    const chartBottom = minVal - (range * 0.1);
+                    const totalRange = chartTop - chartBottom;
+
+                    const barWidth = rect.width / data.length;
+                    const zeroY = rect.height * (chartTop / totalRange);
+
+                    // Draw Zero Line
+                    ctx.beginPath();
+                    ctx.moveTo(0, zeroY);
+                    ctx.lineTo(rect.width, zeroY);
+                    ctx.strokeStyle = theme.value === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+
+                    // Draw Bars
+                    const colorSuccess = getComputedStyle(document.documentElement).getPropertyValue('--success').trim();
+                    const colorDanger = getComputedStyle(document.documentElement).getPropertyValue('--danger').trim();
+
+                    for (let i = 0; i < data.length; i++) {
+                        const val = data[i];
+                        const x = i * barWidth;
+                        // Height = scale value to pixels. Y = from top down.
+                        const barHeightPixels = (Math.abs(val) / totalRange) * rect.height;
+
+                        ctx.fillStyle = val >= 0 ? colorSuccess : colorDanger;
+
+                        if (val >= 0) {
+                            // Draw upward from zero line
+                            ctx.fillRect(x + 1, zeroY - barHeightPixels, Math.max(1, barWidth - 1), barHeightPixels);
+                        } else {
+                            // Draw downward from zero line
+                            ctx.fillRect(x + 1, zeroY, Math.max(1, barWidth - 1), barHeightPixels);
+                        }
+                    }
+                };
+
+                const drawStreakChart = () => {
+                    if (!streakChart.value || !streakContainer.value || metrics.streakDistribution.length === 0) return;
+
+                    const canvas = streakChart.value;
+                    const container = streakContainer.value;
+
+                    const rect = container.getBoundingClientRect();
+                    canvas.width = rect.width * window.devicePixelRatio;
+                    canvas.height = rect.height * window.devicePixelRatio;
+                    canvas.style.width = `${rect.width}px`;
+                    canvas.style.height = `${rect.height}px`;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+                    ctx.clearRect(0, 0, rect.width, rect.height);
+
+                    const maxCount = Math.max(...metrics.streakDistribution.map(d => d.count), 1);
+                    const barWidth = Math.min(rect.width / metrics.streakDistribution.length, 30);
+                    const gap = 2;
+
+                    const colorInfo = getComputedStyle(document.documentElement).getPropertyValue('--info').trim() || '#17a2b8';
+                    const colorMuted = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() || '#6c757d';
+
+                    metrics.streakDistribution.forEach((d, i) => {
+                        const barHeightPixels = (d.count / maxCount) * (rect.height - 20);
+                        const x = i * barWidth + (barWidth - Math.max(1, barWidth - gap)) / 2;
+                        const y = rect.height - 20 - barHeightPixels;
+
+                        ctx.fillStyle = d.length === metrics.mostCommonStreak ? colorInfo : colorMuted;
+                        ctx.globalAlpha = d.length === metrics.mostCommonStreak ? 1 : 0.4;
+                        ctx.fillRect(x, y, Math.max(1, barWidth - gap), barHeightPixels);
+
+                        // Label
+                        ctx.globalAlpha = 1;
+                        ctx.fillStyle = colorMuted;
+                        ctx.font = '10px sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(d.length.toString(), x + (barWidth - gap) / 2, rect.height - 5);
+                    });
+                };
+
+                const drawLeverageChart = () => {
+                    if (!leverageChart.value || !leverageContainer.value || metrics.leverageSeries.length === 0) return;
+
+                    const canvas = leverageChart.value;
+                    const container = leverageContainer.value;
+
+                    const rect = container.getBoundingClientRect();
+                    canvas.width = rect.width * window.devicePixelRatio;
+                    canvas.height = rect.height * window.devicePixelRatio;
+                    canvas.style.width = `${rect.width}px`;
+                    canvas.style.height = `${rect.height}px`;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+                    ctx.clearRect(0, 0, rect.width, rect.height);
+
+                    const maxLev = Math.max(...metrics.leverageSeries.map(d => d.value), params.allowedLeverage * 1.2);
+                    const barWidth = Math.max(rect.width / metrics.leverageSeries.length, 1);
+
+                    const colorSafe = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#4ade80';
+                    const colorDanger = getComputedStyle(document.documentElement).getPropertyValue('--danger').trim() || '#dc3545';
+                    const colorMuted = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() || '#6c757d';
+
+                    // Draw Threshold Line
+                    const thresholdY = rect.height - (params.allowedLeverage / maxLev) * rect.height;
+
+                    ctx.beginPath();
+                    ctx.moveTo(0, thresholdY);
+                    ctx.lineTo(rect.width, thresholdY);
+                    ctx.strokeStyle = colorMuted;
+                    ctx.setLineDash([5, 5]);
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    // Draw Leverage Bars
+                    metrics.leverageSeries.forEach((d, i) => {
+                        const barHeightPixels = (d.value / maxLev) * rect.height;
+                        const x = i * barWidth;
+                        const y = rect.height - barHeightPixels;
+
+                        ctx.fillStyle = d.value > params.allowedLeverage ? colorDanger : colorSafe;
+                        ctx.fillRect(x, y, Math.max(1, barWidth - 1), barHeightPixels);
+                    });
+                };
+
+                // ==========================================
+                // Data Processing Engine
+                // ==========================================
+                const calculatePropMetrics = () => {
+                    if (!sqxOrders.value || sqxOrders.value.length === 0) return false;
+
+                    const orders = sqxOrders.value.slice().sort((a, b) => a.CloseTime - b.CloseTime);
+                    const contractSize = params.contractSize || 100000;
+
+                    const dailyResults = {};
+                    const dailyLeverage = {}; // New: Track peak leverage per day
+                    let profitDays = 0;
+                    let totalDays = 0;
+
+                    // --- 5. Holding Time Behavior ---
+                    let winDurations = [];
+                    let lossDurations = [];
+
+                    // --- 3. Losing Streak / Post-streak ---
+                    let currentStreak = 0;
+                    let losingStreaksFreq = {};
+                    let postStreakReturns = [];
+                    let allReturns = [];
+
+                    // --- New Edge Metrics ---
+                    let currentWinStreak = 0;
+                    let winningStreaksFreq = {};
+                    let postStreakOutcomes = [];
+                    let justBrokeStreak = false;
+                    let recoveryStart = -1;
+                    let recoveryDaysArr = [];
+                    let peakEq = 0;
+                    let peakEquityBeforeStreak = 0;
+                    let runningEquity = 0;
+
+                    // --- 2. Leverage Tracking ---
+                    let peakLeverage = 0;
+
+                    for (let i = 0; i < orders.length; i++) {
+                        const o = orders[i];
+                        allReturns.push(o.ProfitLoss);
+
+                        runningEquity += o.ProfitLoss;
+                        if (runningEquity > peakEq) peakEq = runningEquity;
+
+                        // Recovery time check
+                        if (recoveryStart >= 0 && runningEquity >= peakEquityBeforeStreak) {
+                            recoveryDaysArr.push((o.CloseTime - orders[recoveryStart].CloseTime) / (1000 * 60 * 60 * 24));
+                            recoveryStart = -1;
+                        }
+
+                        // Post-streak outcomes (all trades immediately following streak hit)
+                        if (justBrokeStreak) {
+                            postStreakOutcomes.push(o.ProfitLoss > 0);
+                            justBrokeStreak = false;
+                        }
+
+                        // Daily Aggregation
+                        const dateKey = new Date(o.CloseTime).toISOString().split('T')[0];
+                        if (!dailyResults[dateKey]) {
+                            dailyResults[dateKey] = 0;
+                            totalDays++;
+                        }
+                        dailyResults[dateKey] += o.ProfitLoss;
+
+                        // Holding Times (hours)
+                        const durationHours = o.TimeInTrade / 3600;
+                        if (o.ProfitLoss > 0) {
+                            winDurations.push(durationHours);
+
+                            // Add the finalized losing streak to our frequency map
+                            if (currentStreak > 0) {
+                                losingStreaksFreq[currentStreak] = (losingStreaksFreq[currentStreak] || 0) + 1;
+                            }
+
+                            // If we just broke a losing streak >= threshold, record this win's return!
+                            if (currentStreak >= params.postStreakThreshold) {
+                                postStreakReturns.push(o.ProfitLoss);
+                            }
+
+                            currentWinStreak++;
+                            currentStreak = 0;
+                        } else {
+                            lossDurations.push(durationHours);
+
+                            if (currentWinStreak > 0) {
+                                winningStreaksFreq[currentWinStreak] = (winningStreaksFreq[currentWinStreak] || 0) + 1;
+                            }
+
+                            currentWinStreak = 0;
+                            currentStreak++;
+
+                            if (currentStreak === params.postStreakThreshold) {
+                                justBrokeStreak = true;
+                                if (recoveryStart === -1) {
+                                    peakEquityBeforeStreak = peakEq;
+                                    recoveryStart = i;
+                                }
+                            }
+                        }
+
+                        // Simple Max Leverage Check (Peak open price * size * contract / balance)
+                        const notional = (o.Size || 0) * (o.OpenPrice || 1) * contractSize;
+                        const lev = notional / (o.Balance || params.startingCapital);
+                        if (lev > peakLeverage) peakLeverage = lev;
+                        if (!dailyLeverage[dateKey] || lev > dailyLeverage[dateKey]) {
+                            dailyLeverage[dateKey] = lev;
+                        }
+                    }
+
+                    // Process Dailies
+                    const sortedDates = Object.keys(dailyResults).sort();
+                    metrics.dailySeries = sortedDates.map(date => ({
+                        date: date,
+                        value: dailyResults[date]
+                    }));
+
+                    metrics.leverageSeries = sortedDates.map(date => ({
+                        date: date,
+                        value: dailyLeverage[date] || 0
+                    }));
+
+                    const dailyValues = metrics.dailySeries.map(d => d.value);
+                    metrics.bestDay = dailyValues.length > 0 ? Math.max(...dailyValues) : 0;
+                    metrics.worstDay = dailyValues.length > 0 ? Math.min(...dailyValues) : 0;
+
+                    // --- Prop Firm Constraints ---
+                    // 1. Max Daily Drawdown % (Closed-Trade Proxy)
+                    const startBalance = params.startingCapital;
+                    metrics.maxDailyDdPct = startBalance > 0 ? (Math.abs(metrics.worstDay) / startBalance) * 100 : 0;
+
+                    // 2. Consistency Rule (Max Day % of Total)
+                    const totalNetProfit = dailyValues.reduce((a, b) => a + b, 0);
+                    metrics.consistencyPct = totalNetProfit > 0 ? (metrics.bestDay / totalNetProfit) * 100 : 0;
+
+                    // 3. Daily DD Headroom
+                    metrics.dailyDdHeadroomPct = params.dailyDdLimitPct - metrics.maxDailyDdPct;
+
+                    profitDays = dailyValues.filter(v => v > 0).length;
+                    metrics.profitableDaysPct = totalDays > 0 ? (profitDays / totalDays) * 100 : 0;
+
+                    // Consistency StdDev
+                    const meanDaily = dailyValues.reduce((a, b) => a + b, 0) / (dailyValues.length || 1);
+                    const variance = dailyValues.reduce((a, b) => a + Math.pow(b - meanDaily, 2), 0) / (dailyValues.length || 1);
+                    metrics.monthlyStdDev = Math.sqrt(variance);
+
+                    // VaR / CVaR (95%)
+                    const sortedDailies = [...dailyValues].sort((a, b) => a - b);
+                    const varIndex = Math.floor(sortedDailies.length * 0.05); // 5th percentile
+                    metrics.var95 = sortedDailies.length > 0 ? sortedDailies[varIndex] : 0;
+
+                    const tailLosses = sortedDailies.slice(0, varIndex + 1);
+                    metrics.cvar95 = tailLosses.length > 0 ? (tailLosses.reduce((a, b) => a + b, 0) / tailLosses.length) : 0;
+
+                    // Durations
+                    const avgW = winDurations.length ? winDurations.reduce((a, b) => a + b, 0) / winDurations.length : 0;
+                    const avgL = lossDurations.length ? lossDurations.reduce((a, b) => a + b, 0) / lossDurations.length : 0;
+                    metrics.avgWinDuration = avgW;
+                    metrics.avgLossDuration = avgL;
+                    metrics.losersHeldLonger = avgL > avgW * 1.5; // Flag if losers held 50% longer
+
+                    // Streaks
+                    metrics.postStreakCount = postStreakReturns.length;
+                    metrics.postStreakReturn = postStreakReturns.length ? postStreakReturns.reduce((a, b) => a + b, 0) / postStreakReturns.length : 0;
+                    metrics.baselineReturn = allReturns.length ? allReturns.reduce((a, b) => a + b, 0) / allReturns.length : 0;
+                    metrics.streakEdge = metrics.postStreakReturn - metrics.baselineReturn;
+
+                    // New: Post-Streak Win Rate
+                    const postWins = postStreakOutcomes.filter(w => w).length;
+                    metrics.postStreakWinRate = postStreakOutcomes.length ? (postWins / postStreakOutcomes.length) * 100 : 0;
+
+                    // New: Recovery Days
+                    metrics.avgRecoveryDays = recoveryDaysArr.length ? recoveryDaysArr.reduce((a, b) => a + b, 0) / recoveryDaysArr.length : 0;
+
+                    // Leverage
+                    metrics.peakLeverage = peakLeverage;
+                    metrics.leverageExceeded = peakLeverage > params.allowedLeverage;
+
+                    // 4. Max DD Duration
+                    // Calculate equity curve peaks
+                    let equity = params.contractSize; // assumption
+                    let peakEquity = equity;
+                    let currentDdStart = orders[0]?.CloseTime || 0;
+                    let maxDdDurationMs = 0;
+
+                    orders.forEach(o => {
+                        equity += o.ProfitLoss;
+                        if (equity > peakEquity) {
+                            peakEquity = equity;
+                            const dur = o.CloseTime - currentDdStart;
+                            if (dur > maxDdDurationMs) maxDdDurationMs = dur;
+                            currentDdStart = o.CloseTime;
+                        }
+                    });
+                    // Final check down to end
+                    if (orders.length > 0) {
+                        let finalDur = orders[orders.length - 1].CloseTime - currentDdStart;
+                        if (finalDur > maxDdDurationMs) maxDdDurationMs = finalDur;
+                    }
+                    metrics.maxDdDurationDays = Math.floor(maxDdDurationMs / (1000 * 60 * 60 * 24));
+
+                    // 8. Regime Proxy Analysis (Clustering rolling 10-trade returns)
+                    if (orders.length > 10) {
+                        let blocks = [];
+                        for (let i = 10; i < orders.length; i += 10) {
+                            const chunk = orders.slice(i - 10, i);
+                            const pl = chunk.reduce((a, b) => a + b.ProfitLoss, 0);
+                            const winRt = chunk.filter(c => c.ProfitLoss > 0).length / 10;
+                            blocks.push({ pl, winRt });
+                        }
+
+                        const sortedBlocks = blocks.sort((a, b) => b.pl - a.pl);
+                        if (sortedBlocks.length >= 2) {
+                            const best = sortedBlocks[0];
+                            const worst = sortedBlocks[sortedBlocks.length - 1];
+
+                            metrics.bestRegime = best.winRt >= 0.6 ? "High Momentum" : "High Volatility (Outliers)";
+                            metrics.worstRegime = worst.winRt <= 0.4 ? "Choppy / Reversal" : "Low Volatility Bleeding";
+                        }
+                    } else {
+                        metrics.bestRegime = "N/A (Too few trades)";
+                        metrics.worstRegime = "N/A (Too few trades)";
+                    }
+
+                    // Finalize streak frequencies for the last streak if the history ended on a loss
+                    if (currentStreak > 0) {
+                        losingStreaksFreq[currentStreak] = (losingStreaksFreq[currentStreak] || 0) + 1;
+                    }
+                    if (currentWinStreak > 0) {
+                        winningStreaksFreq[currentWinStreak] = (winningStreaksFreq[currentWinStreak] || 0) + 1;
+                    }
+
+                    metrics.streakDistribution = Object.keys(losingStreaksFreq)
+                        .map(key => ({
+                            length: parseInt(key),
+                            count: losingStreaksFreq[key]
+                        }))
+                        .sort((a, b) => a.length - b.length);
+
+                    metrics.winningStreakDistribution = Object.keys(winningStreaksFreq)
+                        .map(key => ({
+                            length: parseInt(key),
+                            count: winningStreaksFreq[key]
+                        }))
+                        .sort((a, b) => a.length - b.length);
+
+                    if (metrics.streakDistribution.length > 0) {
+                        metrics.mostCommonStreak = metrics.streakDistribution.reduce((max, obj) => obj.count > max.count ? obj : max, metrics.streakDistribution[0]).length;
+                    } else {
+                        metrics.mostCommonStreak = 0;
+                    }
+
+                    if (metrics.winningStreakDistribution.length > 0) {
+                        metrics.mostCommonWinStreak = metrics.winningStreakDistribution.reduce((max, obj) => obj.count > max.count ? obj : max, metrics.winningStreakDistribution[0]).length;
+                    } else {
+                        metrics.mostCommonWinStreak = 0;
+                    }
+
+                    // Average Loss Length
+                    const totalLossStreaks = Object.values(losingStreaksFreq).reduce((a, b) => a + b, 0);
+                    const weightedLossSum = Object.entries(losingStreaksFreq).reduce((sum, [len, count]) => sum + (parseInt(len) * count), 0);
+                    metrics.avgLossStreak = totalLossStreaks > 0 ? weightedLossSum / totalLossStreaks : 0;
+
+                    // Trigger asynchronous canvas redraw after state updates
+                    Vue.nextTick(() => {
+                        drawPnLChart();
+                        drawStreakChart();
+                        drawLeverageChart();
+                    });
+
+                    return true;
+                };
+
+                // ==========================================
+                // Inter-frame Communication (SQX PostMessage API)
+                // ==========================================
+                const requestInitialData = () => {
+                    // Request Stats
+                    window.parent.postMessage({
+                        type: 'GET_STATS',
+                        params: { resultKey: 'Portfolio', direction: '0', sampleType: '127', plType: '10' }
+                    }, '*');
+
+                    // Request Orders
+                    window.parent.postMessage({
+                        type: 'GET_ORDERS',
+                        params: { resultKey: 'Portfolio', direction: '0', sampleType: '127' }
+                    }, '*');
+                };
+
+                const isStrategySelected = (info) => {
+                    return info?.projectName && String(info.projectName).trim() !== ''
+                        && info?.databankName && String(info.databankName).trim() !== ''
+                        && info?.strategyName && String(info.strategyName).trim() !== '';
+                };
+
+                const handleMessage = (event) => {
+                    if (!event.data || !event.data.type) return;
+                    const type = event.data.type;
+                    const payload = event.data.data;
+
+                    if (type === 'STRATEGY_DATA') {
+                        // Strategy loaded: reset state and auto-start recalculation (only when identifiers are present).
+                        strategyInfo.value = payload;
+                        resetMetricsAndCharts();
+
+                        if (!isStrategySelected(payload)) {
+                            // No strategy selected (or host hasn't filled identifiers yet).
+                            simulationRequested.value = false;
+                            simulationComputed.value = false;
+                            return;
+                        }
+                        
+                        simulationRequested.value = true;
+                        requestInitialData();
+                    }
+                    else if (type === 'STATS_RESPONSE') {
+                        sqxStats.value = payload.stats;
+                        statsReady.value = true;
+                        if (simulationRequested.value && ordersReady.value) {
+                            simulationComputed.value = calculatePropMetrics() ? true : false;
+                        }
+                    }
+                    else if (type === 'ORDERS_RESPONSE') {
+                        // Orders are returned in chronological order natively
+                        sqxOrders.value = payload.orders || [];
+                        ordersReady.value = true;
+                        if (simulationRequested.value && statsReady.value) {
+                            simulationComputed.value = calculatePropMetrics() ? true : false;
+                        }
+                    }
+                    else if (type === 'SET_LANGUAGE') {
+                        // Host sends the SQ language object; for now we at least sync <html lang="...">.
+                        const language = event.data.language || payload;
+                        const nextLocale = (typeof language === 'string' ? language : language?.flag || 'en').trim();
+                        lang.value = nextLocale;
+                        localeVersion.value++;
+                        document.documentElement.setAttribute('lang', nextLocale);
+                        console.log("[PropAnalytics] SET_LANGUAGE:", nextLocale);
+                        loadLocale(nextLocale).then(() => {
+                            // Ensure Vue updates after locale content is available.
+                            localeVersion.value++;
+                        });
+                    }
+                    else if (type === 'SET_THEME' || type === 'SWITCH_THEME') {
+                        // Synchronize with host SQX dark/light theme
+                        const newTheme = event.data.theme || payload;
+                        if (newTheme === 'dark' || newTheme === 'light') {
+                            theme.value = newTheme;
+                            document.documentElement.setAttribute('data-theme', theme.value);
+                            Vue.nextTick(() => { drawPnLChart(); drawStreakChart(); drawLeverageChart(); });
+                        }
+                    }
+                };
+
+                const handleRecalculate = () => {
+                    if (!isStrategySelected(strategyInfo.value)) {
+                        return;
+                    }
+                    resetMetricsAndCharts();
+                    simulationRequested.value = true;
+                    requestInitialData();
+                };
+
+                onMounted(() => {
+                    loadLocale('en').then(() => { localeVersion.value++; });
+                    window.addEventListener('message', handleMessage);
+
+                    resizeObserver = new ResizeObserver(() => {
+                        window.requestAnimationFrame(() => {
+                            drawPnLChart();
+                            drawStreakChart();
+                            drawLeverageChart();
+                        });
+                    });
+
+                    if (chartContainer.value) resizeObserver.observe(chartContainer.value);
+                    if (streakContainer.value) resizeObserver.observe(streakContainer.value);
+                    if (leverageContainer.value) resizeObserver.observe(leverageContainer.value);
+                });
+
+                Vue.onUnmounted(() => {
+                    if (resizeObserver) resizeObserver.disconnect();
+                    window.removeEventListener('message', handleMessage);
+                });
+
+                return {
+                    theme,
+                    lang,
+                    t,
+                    tHtml,
+                    params,
+                    metrics,
+                    pnlChart,
+                    chartContainer,
+                    streakChart,
+                    streakContainer,
+                    leverageChart,
+                    leverageContainer,
+                    handleRecalculate,
+                    strategyInfo,
+                    simulationComputed
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+
+</html>

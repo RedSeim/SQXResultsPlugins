@@ -1,0 +1,94 @@
+{
+  "title": "Moteur PropAnalytics",
+  "subtitle": "Analyse statistique avancée conçue pour les métriques d'évaluation des prop firms.",
+  "strategyParameters": "Paramètres de la stratégie",
+
+  "postStreakThresholdLabel": "Seuil post-série",
+  "postStreakThresholdTooltipHtml": "Le nombre de trades perdants consécutifs après lequel le moteur calcule l'avantage statistique (Edge) pour déployer la stratégie.<br><br><strong>Exemple :</strong> Si vous entrez 3, le système calcule le rendement moyen de la stratégie immédiatement après avoir subi 3 pertes consécutives.",
+  "lossesBeforeDeploymentEdge": "Pertes avant l'avantage de déploiement",
+
+  "startingCapitalLabel": "Capital initial ($)",
+  "startingCapitalTooltipHtml": "Le solde de compte initial de votre évaluation de prop trading (par ex. 100 000 $).<br><br><strong>Pourquoi :</strong> Le moteur utilise ce montant exact en dollars comme dénominateur pour calculer avec précision vos baisses de drawdown maximum en pourcentage.",
+
+  "dailyDdLimitLabel": "Limite de DD journalier (%)",
+  "dailyDdLimitTooltipHtml": "La baisse de solde journalière maximale autorisée par la prop firm.",
+
+  "contractSizeLabel": "Taille du contrat (notionnel)",
+  "contractSizeTooltipHtml": "La valeur du contrat de l'actif sous-jacent utilisée pour calculer la Marge / le Levier réel. Cela doit correspondre à vos paramètres SQX et broker.<br><br><strong>Exemple :</strong> Un lot Forex standard (1,00) a une taille de contrat de 100 000. D'autres symboles comme les indices ou les cryptos peuvent avoir une taille de contrat de 1.",
+
+  "maxAllowedLeverageLabel": "Levier maximum autorisé (1:X)",
+  "maxAllowedLeverageTooltipHtml": "La limite maximale de levier réel autorisée par votre prop firm pour ce symbole.<br><br><strong>Exemple :</strong> Si la prop firm autorise un levier de 1:30 pour le Forex, entrez « 30 ». Le système tracera une ligne de seuil sur le graphique historique et détectera une VIOLATION si vos positions ouvertes dépassent cette utilisation de marge.",
+
+  "recalculateStatistics": "Recalculer les statistiques",
+
+  "constraintsCardTitle": "Contraintes de la prop firm",
+  "constraintsTooltipHtml": "Métriques spécifiquement évaluées par les prop firms pour déterminer la cohérence et la marge de sécurité avant l'échec d'un compte.",
+
+  "metricMaxDailyDrawdownLabel": "Drawdown journalier maximum",
+  "metricMaxDailyDrawdownTooltipHtml": "La pire perte journalière sur trades fermés en pourcentage de votre capital de départ (de minuit à minuit).<br><br><strong>Exemple :</strong> Si vous commencez mardi avec 100 000 $, gagnez jusqu'à 102 000 $, puis clôturez une position perdante à 96 000 $, votre baisse journalière est de 4 %. Note : Cette métrique utilise <i>uniquement les trades fermés</i> — la perte flottante en direct peut être plus profonde.",
+
+  "metricDailyLimitHeadroomLabel": "Marge par rapport à la limite journalière",
+  "metricDailyLimitHeadroomTooltipHtml": "La marge de sécurité entre votre pire drawdown journalier historique et la limite d'échec journalier de la prop firm.<br><br><strong>Exemple :</strong> Si la limite est de 5 % et que votre pire journée a atteint 4,2 %, votre marge n'est que de 0,8 %. En trading réel, le slippage peut facilement consommer 0,8 %, ce qui signifie que cette stratégie est dangereusement proche de l'échec.",
+
+  "metricConsistencyRuleComplianceLabel": "Conformité à la règle de cohérence",
+  "metricConsistencyRuleComplianceTooltipHtml": "Mesure le pourcentage de votre profit net total généré par votre meilleure journée.<br><br><strong>Exemple :</strong> La plupart des prop firms (FTMO, TopStep) exigent qu'aucune journée ne représente plus de 30 à 50 % du profit total. Si vous avez gagné 10 000 $ au total mais que 6 000 $ proviennent d'une journée exceptionnelle, votre score est de 60 % — le compte sera probablement rejeté.",
+
+  "dailyProfitLossCardTitle": "Profit et perte journaliers",
+  "dailyProfitLossTooltipHtml": "Une représentation chronologique du profit et de la perte nets journaliers. Les blocs verts représentent les journées profitables, les blocs rouges les journées perdantes.",
+  "bestDayLabel": "Meilleure journée :",
+  "worstDayLabel": "Pire journée :",
+
+  "marginLeverageRiskCardTitle": "Risque de marge et de levier",
+  "marginLeverageRiskTooltipHtml": "Simule les règles de marge des prop firms en calculant le levier réel (valeur notionnelle de tous les trades ouverts simultanément / solde du compte). Signale si vous dépassez la limite autorisée.",
+  "breachedLabel": "VIOLATION",
+  "safeLabel": "SÛR",
+  "historicalTrueLeverageLabel": "Levier réel historique",
+  "peakLabel": "Pic :",
+  "limitLabel": "Limite :",
+  "portfolioMarginLeverageUnsupported": "La simulation du risque de marge et de levier n'est pas fiablement prise en charge pour les portefeuilles en raison de l'allocation dynamique du capital entre plusieurs sous-stratégies.",
+
+  "postStreakEdgeCardTitle": "Avantage post-série",
+  "postStreakEdgeTooltipHtml": "Détermine s'il existe un avantage statistique à attendre un drawdown avant de déployer la stratégie. Compare les rendements de référence aux rendements immédiatement après X pertes consécutives.<br><br><strong>Inclut :</strong> Taux de gain post-série (% de gains immédiatement après la série), durée moyenne de la série perdante, temps de récupération (jours moyens jusqu'à un nouveau sommet d'équité) et mode de série gagnante.",
+  "completeHistoryBaselineLabel": "Référence historique complète",
+  "avgReturnAfterLossesLabel": "Rendement moyen après {threshold}+ pertes",
+  "calculatedEdgeLabel": "Avantage calculé",
+  "winRateAfterLossesLabel": "Taux de gain après {threshold}+ pertes",
+  "avgRecoveryLabel": "Récupération moyenne (jours jusqu'au nouveau sommet)",
+  "daysLabel": "Jours",
+  "streakFrequenciesLabel": "Fréquences de série (Moy. : {avgLossStreak})",
+  "lossModeLabel": "Mode perte :",
+  "lossSingularLabel": "perte",
+  "lossPluralLabel": "pertes",
+  "winModeLabel": "Mode gain :",
+  "winSingularLabel": "gain",
+  "winPluralLabel": "gains",
+
+  "drawdownDurationCardTitle": "Durée du drawdown",
+  "drawdownDurationTooltipHtml": "La plus longue période consécutive (en jours) pendant laquelle la stratégie est restée en dessous de son pic d'équité. Les prop firms recherchent des temps de récupération rapides.",
+  "longestTimeUnderWaterLabel": "Période la plus longue sous l'eau",
+
+  "holdingTimeBehaviorCardTitle": "Comportement du temps de maintien",
+  "holdingTimeBehaviorTooltipHtml": "Compare le temps de maintien moyen. Maintenir des perdants significativement plus longtemps que des gagnants indique souvent un mauvais contrôle psychologique ou une logique de stop-loss défaillante.",
+  "flaggedLabel": "SIGNALÉ",
+  "avgWinningTradeLabel": "Trade gagnant moyen",
+  "avgLosingTradeLabel": "Trade perdant moyen",
+  "hoursLabel": "h",
+
+  "consistencyScoreCardTitle": "Score de cohérence",
+  "consistencyScoreTooltipHtml": "Mesure la stabilité des rendements. Un écart-type élevé indique des performances erratiques. Le % de jours profitables montre la cohérence journalière.",
+  "profitableDaysLabel": "Jours profitables",
+  "monthlyStdDevLabel": "Écart-type mensuel",
+
+  "tailRiskCardTitle": "Risque de queue (95 %)",
+  "tailRiskTooltipHtml": "VaR 95 % : La perte journalière maximale attendue 95 % du temps.<br>CVaR : La perte moyenne lors des 5 % de pires journées (risque de queue).",
+  "valueAtRiskLabel": "Valeur à risque (VaR)",
+  "expectedShortfallLabel": "Shortfall attendu (CVaR)",
+
+  "regimePerformanceCardTitle": "Performance par régime",
+  "regimePerformanceTooltipHtml": "Un proxy pour les conditions de marché. Identifie le type de régime de marché (Momentum, Agité, Haute volatilité) dans lequel la stratégie prospère ou souffre.",
+  "bestEnvironmentLabel": "Meilleur environnement",
+  "worstEnvironmentLabel": "Pire environnement",
+
+  "disclaimerHtml": "Cette analyse est fournie strictement à titre informatif et éducatif dans StrategyQuant X. Elle ne constitue pas un conseil financier, d'investissement ou de trading. Tous les résultats, y compris les backtests et les simulations, sont basés sur des données historiques et des performances hypothétiques, qui peuvent ne pas refléter les conditions futures du marché. Les performances passées ne préjugent pas des résultats futurs. Le trading comporte des risques substantiels ; vous devez effectuer vos propres recherches indépendantes et consulter un conseiller financier agréé avant de prendre toute décision d'investissement ou de trading. <strong>Cet outil utilise des calculs statistiques basés sur des séquences historiques ; l'exécution réelle sur les marchés peut varier significativement.</strong>",
+  "noStrategySelected": "Aucune stratégie sélectionnée"
+}

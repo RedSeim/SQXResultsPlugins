@@ -1,0 +1,24 @@
+{
+  "title": "Pass Probability Analysis",
+  "subtitle": "Monte Carlo simulation of your strategy's probability to pass a challenge.",
+  "parameters": "Parameters",
+  "startEquity": "Start Equity",
+  "winRate": "Win Rate",
+  "riskPerTrade": "Risk Per Trade",
+  "rewardToRisk": "Reward to Risk (R)",
+  "profitTarget": "Profit Target",
+  "maxDrawdown": "Max Drawdown",
+  "simulations": "Simulations",
+  "tradesPerSim": "Trades per Sim",
+  "runSimulation": "Run Simulation",
+  "passProbability": "Pass Probability",
+  "riskOfRuin": "Risk of Ruin",
+  "target": "TARGET",
+  "maxDd": "MAX DD",
+  "start": "START",
+  "switchTheme": "Switch Theme",
+  "introTooltipHtml": "StrategyQuant Monte Carlo simulation helps you estimate the probability of passing a prop firm challenge or hitting a drawdown limit based on your strategy's win rate, risk-to-reward, and risk per trade.<br><br><strong>Practical Example:</strong><br>If your strategy has a 50% win rate and 1:2 RRR, and you risk 1% per trade to reach a 10% profit target without hitting a 10% drawdown:<ol style=\"margin: 5px 0 0 15px; padding: 0;\"><li>Enter these values into the parameters.</li><li>Run Simulation (e.g., 1000 times).</li><li>If the 'Pass Probability' is 70%, it means in 700 out of 1000 simulated 'universes', your strategy reached the target before the drawdown limit.</li></ol><br><em>Note: This is statistical math based on random trade sequences (Monte Carlo sampling).</em>",
+  "disclaimerHtml": "This analysis is provided strictly for informational and educational purposes within StrategyQuant X. It does not constitute financial, investment, or trading advice. All results, including backtests and simulations, are based on historical data and hypothetical performance, which may not reflect future market conditions. Past performance is not indicative of future results. Trading involves substantial risk, and you should conduct your own independent research and consult a licensed financial advisor before making any investment or trading decisions. <strong>This tool utilizes statistical math based on historical sequences; actual market execution may vary significantly.</strong>",
+  "noStrategySelected": "No strategy selected"
+}
+

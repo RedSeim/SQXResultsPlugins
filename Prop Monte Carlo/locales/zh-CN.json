@@ -1,0 +1,24 @@
+{
+  "title": "通过概率分析",
+  "subtitle": "使用蒙特卡洛模拟你的策略通过挑战的概率。",
+  "parameters": "参数",
+  "startEquity": "初始资金",
+  "winRate": "胜率",
+  "riskPerTrade": "每笔交易风险",
+  "rewardToRisk": "收益/风险 (R)",
+  "profitTarget": "利润目标",
+  "maxDrawdown": "最大回撤",
+  "simulations": "模拟次数",
+  "tradesPerSim": "每次模拟交易数",
+  "runSimulation": "运行模拟",
+  "passProbability": "通过概率",
+  "riskOfRuin": "破产风险",
+  "target": "目标",
+  "maxDd": "最大回撤",
+  "start": "开始",
+  "switchTheme": "切换主题",
+  "introTooltipHtml": "StrategyQuant 的蒙特卡洛模拟可以帮助你估算：在给定策略胜率、收益/风险比以及每笔交易风险的情况下，你的策略通过 prop firm（自营/考核）挑战的概率，或触及回撤（drawdown）上限的概率。<br><br><strong>实际例子：</strong><br>如果你的策略胜率为 50%，RRR 为 1:2，并且你每笔交易承担 1% 的风险，以在不触及 10% 回撤的情况下达到 10% 的利润目标：<ol style=\"margin: 5px 0 0 15px; padding: 0;\"><li>把这些数值填写到参数中。</li><li>运行模拟（例如 1000 次）。</li><li>如果“通过概率”是 70%，这意味着在 1000 个被模拟的“宇宙”中，有 700 个宇宙里，你的策略在触及回撤上限之前达到了目标。</li></ol><br><em>注意：这是基于随机交易序列的统计计算（蒙特卡洛抽样）。</em>",
+  "disclaimerHtml": "本分析仅在 StrategyQuant X 中用于信息与教育目的。它不构成任何金融、投资或交易建议。所有结果（包括回测与模拟）都基于历史数据与假设表现，可能无法反映未来的市场状况。过去的表现不代表未来结果。交易存在重大风险，在做出任何投资或交易决策之前，你应进行独立研究，并咨询持牌金融顾问。 <strong>本工具使用基于历史序列的统计数学；实际市场执行可能会有显著差异。</strong>",
+  "noStrategySelected": "未选择策略"
+}
+

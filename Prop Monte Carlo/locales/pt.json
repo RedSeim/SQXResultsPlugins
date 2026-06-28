@@ -1,0 +1,24 @@
+{
+  "title": "Análise da Probabilidade de Aprovação",
+  "subtitle": "Simulação de Monte Carlo da probabilidade da sua estratégia superar um desafio.",
+  "parameters": "Parâmetros",
+  "startEquity": "Capital Inicial",
+  "winRate": "Taxa de Acerto",
+  "riskPerTrade": "Risco por Trade",
+  "rewardToRisk": "Relação Lucro/Risco (R)",
+  "profitTarget": "Alvo de Lucro",
+  "maxDrawdown": "Maior Drawdown",
+  "simulations": "Simulações",
+  "tradesPerSim": "Trades por Simulação",
+  "runSimulation": "Executar Simulação",
+  "passProbability": "Probabilidade de Aprovação",
+  "riskOfRuin": "Risco de Ruína",
+  "target": "ALVO",
+  "maxDd": "MAX DD",
+  "start": "INÍCIO",
+  "switchTheme": "Mudar Tema",
+  "introTooltipHtml": "A simulação Monte Carlo da StrategyQuant ajuda você a estimar a probabilidade de passar no desafio de uma prop firm ou atingir um limite de drawdown com base na taxa de acerto da sua estratégia, na relação risco/recompensa e no risco por trade.<br><br><strong>Exemplo prático:</strong><br>Se a sua estratégia tem 50% de taxa de acerto e RRR 1:2, e você arrisca 1% por trade para chegar a um alvo de lucro de 10% sem tocar um drawdown de 10%:<ol style=\"margin: 5px 0 0 15px; padding: 0;\"><li>Insira esses valores nos parâmetros.</li><li>Execute a Simulação (por exemplo, 1000 vezes).</li><li>Se a 'Probabilidade de Aprovação' for 70%, significa que em 700 de 1000 universos simulados, a sua estratégia atingiu o alvo antes do limite de drawdown.</li></ol><br><em>Nota: trata-se de matemática estatística baseada em sequências aleatórias de trades (amostragem Monte Carlo).</em>",
+  "disclaimerHtml": "Esta análise é fornecida estritamente para fins informativos e educacionais dentro do StrategyQuant X. Isso não constitui aconselhamento financeiro, de investimento ou de trading. Todos os resultados, incluindo backtests e simulações, são baseados em dados históricos e desempenho hipotético, que podem não refletir condições futuras do mercado. Desempenho passado não é indicativo de resultados futuros. Trading envolve risco significativo e você deve realizar sua própria pesquisa independente e consultar um assessor financeiro licenciado antes de tomar qualquer decisão de investimento ou trading. <strong>Esta ferramenta utiliza matemática estatística com base em sequências históricas; a execução real no mercado pode variar significativamente.</strong>",
+  "noStrategySelected": "Nenhuma estratégia selecionada"
+}
+

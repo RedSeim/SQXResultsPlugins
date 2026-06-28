@@ -1,0 +1,24 @@
+{
+  "title": "Analisis Probabilitas Lulus",
+  "subtitle": "Simulasi Monte Carlo untuk probabilitas strategi Anda dapat lulus dari sebuah tantangan.",
+  "parameters": "Parameter",
+  "startEquity": "Ekuitas Awal",
+  "winRate": "Tingkat Kemenangan",
+  "riskPerTrade": "Risiko per Transaksi",
+  "rewardToRisk": "Imbal Hasil terhadap Risiko (R)",
+  "profitTarget": "Target Keuntungan",
+  "maxDrawdown": "Drawdown Maksimum",
+  "simulations": "Simulasi",
+  "tradesPerSim": "Transaksi per Simulasi",
+  "runSimulation": "Jalankan Simulasi",
+  "passProbability": "Probabilitas Lulus",
+  "riskOfRuin": "Risiko Rugi Total",
+  "target": "TARGET",
+  "maxDd": "MAX DD",
+  "start": "MULAI",
+  "switchTheme": "Ganti Tema",
+  "introTooltipHtml": "Simulasi StrategyQuant Monte Carlo membantu Anda memperkirakan probabilitas untuk lulus dari tantangan prop firm atau mencapai batas drawdown berdasarkan tingkat kemenangan strategi Anda, rasio imbal hasil terhadap risiko, dan risiko per transaksi.<br><br><strong>Contoh Praktis:</strong><br>Jika strategi Anda memiliki tingkat kemenangan 50% dan RRR 1:2, dan Anda berisiko 1% per transaksi untuk mencapai target keuntungan 10% tanpa menyentuh drawdown 10%:<ol style=\"margin: 5px 0 0 15px; padding: 0;\"><li>Masukkan nilai-nilai ini ke parameter.</li><li>Jalankan simulasi (misalnya 1000 kali).</li><li>Jika 'Probabilitas Lulus' adalah 70%, artinya dalam 700 dari 1000 semesta yang disimulasikan, strategi Anda mencapai target sebelum batas drawdown.</li></ol><br><em>Catatan: ini adalah perhitungan statistik berdasarkan urutan transaksi acak (sampling Monte Carlo).</em>",
+  "disclaimerHtml": "Analisis ini disediakan secara ketat untuk tujuan informasi dan edukasi dalam StrategyQuant X. Ini bukan merupakan nasihat keuangan, investasi, atau perdagangan. Semua hasil, termasuk backtest dan simulasi, didasarkan pada data historis dan kinerja hipotetis, yang mungkin tidak mencerminkan kondisi pasar di masa depan. Kinerja masa lalu bukan indikator hasil di masa depan. Perdagangan melibatkan risiko yang signifikan, dan Anda harus melakukan riset independen serta berkonsultasi dengan penasihat keuangan berlisensi sebelum membuat keputusan investasi atau perdagangan apa pun. <strong>Alat ini menggunakan matematika statistik berbasis rangkaian historis; pelaksanaan pasar yang sebenarnya dapat berbeda secara signifikan.</strong>",
+  "noStrategySelected": "Tidak ada strategi yang dipilih"
+}
+
