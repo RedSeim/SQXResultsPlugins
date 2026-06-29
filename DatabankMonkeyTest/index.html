@@ -545,6 +545,38 @@
       background-color: #c82333;
     }
 
+    /* Button Success */
+    .btn-success {
+      color: white;
+      background-color: var(--success);
+    }
+
+    .btn-success:hover {
+      background-color: #1e7e34;
+    }
+
+    /* Sortable table headers */
+    th.sortable {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    th.sortable:hover {
+      color: var(--primary);
+    }
+
+    .sort-arrow {
+      margin-left: 4px;
+      font-size: 9px;
+      color: var(--text-muted);
+      opacity: 0.5;
+    }
+
+    th.sort-active .sort-arrow {
+      color: var(--primary);
+      opacity: 1;
+    }
+
     /* Progress Bar */
     .progress-container {
       margin-top: 10px;
@@ -694,37 +726,26 @@
             </div>
           </div>
 
-          <!-- Period selector -->
+          <!-- Perform Test On selector -->
           <div class="form-group">
-            <label>{{ t('periodLabel') }}</label>
-            <select class="form-control" v-model="settings.period" @change="onSettingsChange">
-              <option value="Full">{{ t('periodFull') }}</option>
-              <option value="IS">{{ t('periodIS') }}</option>
-              <option value="OOS">{{ t('periodOOS') }}</option>
-            </select>
-          </div>
-
-          <!-- MM Selector -->
-          <div class="form-group">
-            <label>{{ t('mmLabel') }}</label>
-            <select class="form-control" v-model="settings.mmMode" @change="onSettingsChange">
-              <option value="Fixed">{{ t('mmFixed') }}</option>
-              <option value="Compounding">{{ t('mmCompounding') }}</option>
+            <label>{{ t('performTestOn') }}</label>
+            <select class="form-control" v-model="settings.testTarget">
+              <option value="both">{{ t('testBoth') }}</option>
+              <option value="active">{{ t('testActiveStrategy') }}</option>
+              <option value="bulk">{{ t('testBulkDatabank') }}</option>
             </select>
           </div>
 
           <!-- Simulated Monkeys -->
           <div class="form-group">
             <label>{{ t('numMonkeys') }}: {{ settings.numMonkeys }}</label>
-            <input type="range" class="form-control" min="100" max="1000" step="50" v-model.number="settings.numMonkeys"
-              @change="onSettingsChange">
+            <input type="range" class="form-control" min="100" max="1000" step="50" v-model.number="settings.numMonkeys">
           </div>
 
           <!-- Percentile -->
           <div class="form-group">
             <label>{{ t('percentile') }}: {{ settings.percentile }}%</label>
-            <input type="range" class="form-control" min="50" max="99.9" step="0.1" v-model.number="settings.percentile"
-              @change="onSettingsChange">
+            <input type="range" class="form-control" min="50" max="99.9" step="0.1" v-model.number="settings.percentile">
           </div>
 
           <!-- Progress bar -->
@@ -742,8 +763,8 @@
 
           <!-- Run / Cancel test btn -->
           <button v-if="!isCalculating" class="btn btn-primary"
-            :disabled="priceData.length === 0 || (activeStrategy === null && bulkStrategies.length === 0) || (bulkStrategies.length > 0 && sqxValidationError)"
-            @click="runTestOnAll">
+            :disabled="isRunDisabled"
+            @click="runMonkeyTest">
             {{ t('runTest') }}
           </button>
           <button v-else class="btn btn-danger" @click="cancelCalculation">
@@ -860,21 +881,19 @@
                 <table>
                   <thead>
                     <tr>
-                      <th>{{ t('stratName') }}</th>
-                      <th>{{ t('period') }}</th>
-                      <th>{{ t('realProfit') }}</th>
-                      <th>{{ t('monkeyThreshold') }}</th>
-                      <th>{{ t('monkeyTestResult') }}</th>
-                      <th>{{ t('zScore') }}</th>
-                      <th>{{ t('status') }}</th>
+                      <th class="sortable" :class="{ 'sort-active': sortColumn === 'name' }" @click="setSort('name')">{{ t('stratName') }}<span class="sort-arrow">{{ sortColumn === 'name' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span></th>
+                      <th class="sortable" :class="{ 'sort-active': sortColumn === 'realReturn' }" @click="setSort('realReturn')">{{ t('realProfit') }}<span class="sort-arrow">{{ sortColumn === 'realReturn' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span></th>
+                      <th class="sortable" :class="{ 'sort-active': sortColumn === 'monkeyThreshold' }" @click="setSort('monkeyThreshold')">{{ t('monkeyThreshold') }}<span class="sort-arrow">{{ sortColumn === 'monkeyThreshold' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span></th>
+                      <th class="sortable" :class="{ 'sort-active': sortColumn === 'rankPercentile' }" @click="setSort('rankPercentile')">{{ t('monkeyTestResult') }}<span class="sort-arrow">{{ sortColumn === 'rankPercentile' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span></th>
+                      <th class="sortable" :class="{ 'sort-active': sortColumn === 'zScore' }" @click="setSort('zScore')">{{ t('zScore') }}<span class="sort-arrow">{{ sortColumn === 'zScore' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span></th>
+                      <th class="sortable" :class="{ 'sort-active': sortColumn === 'status' }" @click="setSort('status')">{{ t('status') }}<span class="sort-arrow">{{ sortColumn === 'status' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span></th>
                       <th>{{ t('action') }}</th>
                       <th>{{ t('dataExport') }}</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="res in bulkResults" :key="res.name">
+                    <tr v-for="res in displayedBulkResults" :key="res.name">
                       <td><strong>{{ res.name }}</strong></td>
-                      <td>{{ res.period }}</td>
                       <td>${{ res.realReturn.toFixed(2) }}</td>
                       <td>${{ res.monkeyThreshold.toFixed(2) }}</td>
                       <td>{{ res.rankPercentile.toFixed(1) }}%</td>
@@ -1016,7 +1035,11 @@
         "downloadPassedZip": "Download Passed ({count}) .zip",
         "errSqxNoFiles": "Please upload the .sqx files for all strategies.",
         "errSqxMissingFiles": "Missing .sqx files for",
-        "errSqxExtraFiles": "Extra .sqx files uploaded"
+        "errSqxExtraFiles": "Extra .sqx files uploaded",
+        "performTestOn": "Perform Test On:",
+        "testActiveStrategy": "Active Strategy",
+        "testBulkDatabank": "Bulk Databank",
+        "testBoth": "Active + Bulk Databank"
       },
       es: {
         "title": "Test del Mono del Databank",
@@ -1075,7 +1098,11 @@
         "downloadPassedZip": "Descargar Aprobadas ({count}) .zip",
         "errSqxNoFiles": "Por favor, carga los archivos .sqx de todas las estrategias.",
         "errSqxMissingFiles": "Faltan los archivos .sqx para",
-        "errSqxExtraFiles": "Se cargaron archivos .sqx adicionales"
+        "errSqxExtraFiles": "Se cargaron archivos .sqx adicionales",
+        "performTestOn": "Aplicar Test A:",
+        "testActiveStrategy": "Estrategia Activa",
+        "testBulkDatabank": "Databank Masivo",
+        "testBoth": "Activa + Databank Masivo"
       }
     };
 
@@ -1090,8 +1117,9 @@
 
         // Settings
         const settings = reactive({
-          period: 'Full', // Full, IS, OOS
-          mmMode: 'Fixed', // Fixed, Compounding
+          period: 'Full',
+          mmMode: 'Fixed',
+          testTarget: 'both',
           numMonkeys: 500,
           percentile: 95.0
         });
@@ -1399,9 +1427,6 @@
 
               priceData.value = parsed;
               timeMap.value = newTimeMap;
-
-              // Run tests automatically if possible
-              if (activeStrategy.value) runActiveStrategyTest();
             } catch (err) {
               errorMessage.value = "Price CSV Error: " + err.message;
               clearPriceData();
@@ -1596,9 +1621,6 @@
                   bulkStrategies.value = parsedList;
                   bulkResults.value = [];
                   validateSqxFiles();
-                  if (priceData.value.length > 0 && !sqxValidationError.value) {
-                    runBulkTest();
-                  }
                 }
               } catch (err) {
                 errorMessage.value = "CSV Error: " + err.message;
@@ -1835,10 +1857,6 @@
             // Sort chronologically
             list.sort((a, b) => a.OpenTime - b.OpenTime);
             activeStrategy.value.trades = list;
-
-            if (priceData.value.length > 0) {
-              runActiveStrategyTest();
-            }
           }
         };
 
@@ -2284,7 +2302,7 @@
         // ===================================================================
         const runActiveStrategyTest = () => {
           if (!activeStrategy.value || priceData.value.length === 0) return;
-          if (!activeWorker) initActiveWorker();
+          initActiveWorker();
           isCalculatingActive.value = true;
           activeWorker.postMessage({
             type: 'START_SINGLE',
@@ -2304,7 +2322,7 @@
 
         const runBulkTest = () => {
           if (bulkStrategies.value.length === 0 || priceData.value.length === 0) return;
-          if (!bulkWorker) initBulkWorker();
+          initBulkWorker();
           isCalculatingBulk.value = true;
           progress.value = 0;
           currentProcessingName.value = '';
@@ -2664,16 +2682,30 @@
           document.body.removeChild(link);
         };
 
-        const runTestOnAll = () => {
-          runActiveStrategyTest();
-          runBulkTest();
-        };
-
-        const onSettingsChange = () => {
-          if (priceData.value.length > 0) {
-            runTestOnAll();
+        const runMonkeyTest = () => {
+          const target = settings.testTarget;
+          if (target === 'active' || target === 'both') {
+            runActiveStrategyTest();
+          }
+          if (target === 'bulk' || target === 'both') {
+            runBulkTest();
           }
         };
+
+        const isRunDisabled = computed(() => {
+          if (priceData.value.length === 0) return true;
+          const target = settings.testTarget;
+          if (target === 'active') {
+            return !activeStrategy.value || activeStrategy.value.trades.length === 0;
+          }
+          if (target === 'bulk') {
+            return bulkStrategies.value.length === 0 || !!sqxValidationError.value;
+          }
+          // both: at least one source must be available
+          const hasActive = activeStrategy.value && activeStrategy.value.trades.length > 0;
+          const hasBulk = bulkStrategies.value.length > 0 && !sqxValidationError.value;
+          return !hasActive && !hasBulk;
+        });
 
         const inspectBulkStrategy = (res) => {
           inspectedStrategy.value = res;
@@ -2951,6 +2983,36 @@
           return total / bulkResults.value.length;
         });
 
+        // Sortable table state
+        const sortColumn = ref('');
+        const sortDir = ref('desc');
+
+        const setSort = (column) => {
+          if (sortColumn.value === column) {
+            sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc';
+          } else {
+            sortColumn.value = column;
+            sortDir.value = column === 'name' ? 'asc' : 'desc';
+          }
+        };
+
+        const STATUS_ORDER = { 'PASSED': 0, 'LOW TRADES': 1, 'FAILED': 2 };
+
+        const displayedBulkResults = computed(() => {
+          if (!sortColumn.value) return bulkResults.value;
+          const col = sortColumn.value;
+          const dir = sortDir.value === 'asc' ? 1 : -1;
+          return [...bulkResults.value].sort((a, b) => {
+            let va = a[col];
+            let vb = b[col];
+            if (col === 'status') {
+              va = STATUS_ORDER[va] ?? 99;
+              vb = STATUS_ORDER[vb] ?? 99;
+            }
+            if (typeof va === 'string') return dir * va.localeCompare(vb);
+            return dir * (va - vb);
+          });
+        });
 
         // Initialize Resize Observers
         onMounted(() => {
@@ -3005,11 +3067,15 @@
           clearPriceData,
           loadBulkCSV,
           clearBulkData,
-          runTestOnAll,
-          onSettingsChange,
+          runMonkeyTest,
+          isRunDisabled,
           inspectBulkStrategy,
           passRate,
           avgZScore,
+          sortColumn,
+          sortDir,
+          setSort,
+          displayedBulkResults,
           t,
           tHtml,
           isCalculating,

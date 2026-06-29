@@ -54,5 +54,9 @@
   "downloadPassedZip": "Descargar Aprobadas ({count}) .zip",
   "errSqxNoFiles": "Por favor, carga los archivos .sqx de todas las estrategias.",
   "errSqxMissingFiles": "Faltan los archivos .sqx para",
-  "errSqxExtraFiles": "Se cargaron archivos .sqx adicionales"
+  "errSqxExtraFiles": "Se cargaron archivos .sqx adicionales",
+  "performTestOn": "Aplicar Test A:",
+  "testActiveStrategy": "Estrategia Activa",
+  "testBulkDatabank": "Databank Masivo",
+  "testBoth": "Activa + Databank Masivo"
 }

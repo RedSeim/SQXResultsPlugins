@@ -54,5 +54,9 @@
   "downloadPassedZip": "Download Passed ({count}) .zip",
   "errSqxNoFiles": "Please upload the .sqx files for all strategies.",
   "errSqxMissingFiles": "Missing .sqx files for",
-  "errSqxExtraFiles": "Extra .sqx files uploaded"
+  "errSqxExtraFiles": "Extra .sqx files uploaded",
+  "performTestOn": "Perform Test On:",
+  "testActiveStrategy": "Active Strategy",
+  "testBulkDatabank": "Bulk Databank",
+  "testBoth": "Active + Bulk Databank"
 }
