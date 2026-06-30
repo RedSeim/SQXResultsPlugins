@@ -3,7 +3,12 @@
     "allow": [
       "PowerShell(if \\($?\\) { \"en.json OK\" })",
       "PowerShell(if \\($?\\) { \"es.json OK\" })",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(ls \"g:/Software/StrategyQuantX/144/user/exports/\" 2>/dev/null || echo \"NO_EXISTS\")",
+      "Read(//g/Software/StrategyQuantX/144/user/exports/**)",
+      "Bash(ls \"g:/Software/StrategyQuantX/144/user/exports/MonkeyTest/\")",
+      "Read(//g/Software/StrategyQuantX/144/user/exports/MonkeyTest/**)",
+      "PowerShell(cmd /c mklink /J \"g:\\\\Software\\\\StrategyQuantX\\\\144\\\\user\\\\extend\\\\ResultsPlugins\\\\DatabankMonkeyTest\\\\cache\" \"g:\\\\Software\\\\StrategyQuantX\\\\144\\\\user\\\\exports\\\\MonkeyTest\")"
     ]
   }
 }

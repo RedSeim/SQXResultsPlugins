@@ -504,6 +504,81 @@
       padding: 20px;
     }
 
+    /* Unified Save Cache button */
+    .btn-save-cache-unified {
+      background: #5cb85c;
+      color: #fff;
+      border: none;
+      padding: 7px 14px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.15s;
+      margin-top: 6px;
+    }
+    .btn-save-cache-unified:hover:not(:disabled) { background: #4cae4c; }
+    .btn-save-cache-unified:disabled { opacity: 0.5; cursor: not-allowed; }
+    .tip-icon-btn {
+      font-size: 12px;
+      color: rgba(255,255,255,0.85);
+      cursor: help;
+      flex-shrink: 0;
+      line-height: 1;
+      user-select: none;
+    }
+    /* Tooltip rendered via <teleport to="body"> to escape any overflow clipping */
+    .save-tip-popup {
+      position: fixed;
+      white-space: pre-line;
+      background: var(--bg-surface);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      max-width: 300px;
+      min-width: 180px;
+      z-index: 99999;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      pointer-events: none;
+      line-height: 1.6;
+    }
+    .cache-save-msg {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    /* Cache status badge */
+    .cache-badge {
+      margin: 6px 0 4px 0;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      line-height: 1.4;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .cache-badge-loading  { background: var(--bg-surface); color: var(--text-muted); border: 1px solid var(--border-color); }
+    .cache-badge-loaded   { background: rgba(92,184,92,0.12); color: #3a7a3a; border: 1px solid rgba(92,184,92,0.4); }
+    [data-theme="dark"] .cache-badge-loaded { color: #7ec87e; }
+    .cache-badge-approx   { background: rgba(240,173,78,0.15); color: #8a6000; border: 1px solid rgba(240,173,78,0.4); }
+    [data-theme="dark"] .cache-badge-approx { color: #f0c060; }
+    .cache-badge-info     { background: rgba(51,122,183,0.1); color: var(--primary); border: 1px solid rgba(51,122,183,0.3); }
+    .cache-badge-warning  { background: rgba(240,173,78,0.15); color: #8a6000; border: 1px solid rgba(240,173,78,0.4); }
+    [data-theme="dark"] .cache-badge-warning { color: #f0c060; }
+    .cache-badge-error    { background: rgba(217,83,79,0.1); color: #a02020; border: 1px solid rgba(217,83,79,0.3); }
+    [data-theme="dark"] .cache-badge-error { color: #e08080; }
+    .cache-spinner { display: inline-block; animation: spin 1s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
     /* Disclaimer Footer */
     .disclaimer {
       margin-top: 12px;
@@ -770,6 +845,21 @@
           <button v-else class="btn btn-danger" @click="cancelCalculation">
             {{ t('cancel') }}
           </button>
+
+          <!-- Unified Save Cache button — saves active + all bulk results -->
+          <template v-if="hasAnyResult">
+            <button class="btn-save-cache-unified"
+              :disabled="!canSaveAny || isSavingCache"
+              :title="!canSaveAny && !isSavingCache ? t('noCsvUploaded') : ''"
+              @click="saveAllCacheData">
+              {{ isSavingCache ? t('savingCache') : t('saveTestCacheData') }}
+              <span
+                class="tip-icon-btn"
+                @mouseenter.stop="onTipEnter($event)"
+                @mouseleave.stop="tipVisible = false">ⓘ</span>
+            </button>
+            <div v-if="cacheSaveMsg" class="cache-save-msg" style="text-align: center; margin-top: 3px;">{{ cacheSaveMsg }}</div>
+          </template>
         </div>
       </div>
 
@@ -793,8 +883,11 @@
               </div>
               <div class="kpi-card-content" style="padding-right: 50px;">
                 <div class="kpi-label">{{ activeResult.name }}</div>
-                <div class="kpi-val" :class="activeResult.status === 'PASSED' ? 'text-success' : 'text-danger'">
-                  {{ t(activeResult.status.toLowerCase()) }}
+                <div class="kpi-val">
+                  <span class="badge"
+                    :class="activeResult.status === 'PASSED' ? 'badge-success' : (activeResult.status === 'LOW TRADES' ? 'badge-warning' : 'badge-danger')">
+                    {{ t(activeResult.status.toLowerCase().replace(' ', '')) }}
+                  </span>
                 </div>
               </div>
               <button class="btn btn-secondary btn-sm" style="position: absolute; right: 10px; top: 10px;"
@@ -810,10 +903,36 @@
             </div>
             <div class="kpi-card">
               <div class="kpi-card-content">
+                <div class="kpi-label">{{ t('monkeyThreshold') }}</div>
+                <div class="kpi-val">${{ activeResult.monkeyThreshold.toFixed(2) }}</div>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-card-content">
+                <div class="kpi-label">{{ t('monkeyTestResult') }}</div>
+                <div class="kpi-val">{{ activeResult.rankPercentile.toFixed(1) }}%</div>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-card-content">
                 <div class="kpi-label">{{ t('realProfit') }}</div>
                 <div class="kpi-val">${{ activeResult.realReturn.toFixed(2) }}</div>
               </div>
             </div>
+          </div>
+
+          <!-- Cache auto-load status badge -->
+          <div v-if="cacheStatus !== 'idle'" class="cache-badge"
+               :class="{
+                 'cache-badge-loading':  cacheStatus === 'loading',
+                 'cache-badge-loaded':   cacheStatus === 'loaded',
+                 'cache-badge-approx':   cacheStatus === 'approx',
+                 'cache-badge-info':     cacheStatus === 'none',
+                 'cache-badge-warning':  cacheStatus === 'mismatch',
+                 'cache-badge-error':    cacheStatus === 'error'
+               }">
+            <span v-if="cacheStatus === 'loading'" class="cache-spinner">⟳</span>
+            {{ cacheBadgeText }}
           </div>
 
           <div class="dashboard-grid">
@@ -869,13 +988,15 @@
             <!-- Results list -->
             <div class="results-table-box">
               <div class="table-header"
-                style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 6px;">
                 <span>{{ t('strategiesGrid') }}</span>
-                <button v-if="bulkResults.length > 0" class="btn btn-success btn-sm"
-                  :disabled="!hasPassedStrategies || sqxFiles.size === 0 || sqxValidationError"
-                  @click="downloadPassedZip">
-                  📦 {{ t('downloadPassedZip', { count: passedStrategiesCount }) }}
-                </button>
+                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+<button v-if="bulkResults.length > 0" class="btn btn-success btn-sm"
+                    :disabled="!hasPassedStrategies || sqxFiles.size === 0 || sqxValidationError"
+                    @click="downloadPassedZip">
+                    📦 {{ t('downloadPassedZip', { count: passedStrategiesCount }) }}
+                  </button>
+                </div>
               </div>
               <div class="table-scroll">
                 <table>
@@ -955,11 +1076,16 @@
 
     <!-- Pinned Footer Disclaimer -->
     <div class="disclaimer" v-html="tHtml('disclaimerHtml')"></div>
+
+    <!-- Save cache tooltip — teleported to <body> to escape any overflow/z-index clipping -->
+    <teleport to="body">
+      <div v-if="tipVisible" class="save-tip-popup" :style="tipStyle">{{ t('saveTestCacheDataTip') }}</div>
+    </teleport>
   </div>
 
   <!-- Main logic -->
   <script>
-    const { createApp, ref, reactive, computed, onMounted, nextTick } = Vue;
+    const { createApp, ref, reactive, computed, onMounted, nextTick, watch } = Vue;
 
     const messages = reactive({});
     const loadedLocales = new Set();
@@ -1039,7 +1165,26 @@
         "performTestOn": "Perform Test On:",
         "testActiveStrategy": "Active Strategy",
         "testBulkDatabank": "Bulk Databank",
-        "testBoth": "Active + Bulk Databank"
+        "testBoth": "Active + Bulk Databank",
+        "loadingSavedData": "Loading saved Monkey Test data…",
+        "dataLoadedFromExport": "Loaded from cache (period: {period} · generated: {date} · source: {source})",
+        "dataLoadedApprox": "Loaded from cache (approximate — no fingerprint)",
+        "noMatchingData": "No cached Monkey Test data matches this strategy's period. Run the Custom Analysis or click 'Run Monkey Test'.",
+        "temporalMismatch": "Cached data does not match the current strategy period (strategy may have been re-backtested).",
+        "fetchError": "Error loading cached data: {error}",
+        "sourceBadgeCA": "Custom Analysis",
+        "sourceBadgePlugin": "Plugin calculation",
+        "deleteCachedData": "Delete Cached Data",
+        "deleteConfirm": "Delete cached Monkey Test data for {scope}? This cannot be undone.",
+        "cacheDeleted": "Cached data deleted.",
+        "cacheSaved": "Results saved to cache.",
+        "cacheSaveFailed": "Could not save to cache: {error}",
+        "cacheWriteManual": "Move the downloaded files to the cache/ folder inside the plugin to enable auto-loading.",
+        "cacheDeleteUnavailable": "File deletion is not available in this SQX version. Delete files manually from the cache/ folder inside the plugin.",
+        "saveTestCacheData": "Save Test Cache Data",
+        "saveTestCacheDataTip": "Saves monkey simulation CSV + metadata to disk.\nAllows charts to reload without recalculating.\nRecommended: .../DatabankMonkeyTest/cache/",
+        "savingCache": "Saving…",
+        "cacheSaveSuccess": "Saved {count} strategy(ies) to selected folder."
       },
       es: {
         "title": "Test del Mono del Databank",
@@ -1102,7 +1247,26 @@
         "performTestOn": "Aplicar Test A:",
         "testActiveStrategy": "Estrategia Activa",
         "testBulkDatabank": "Databank Masivo",
-        "testBoth": "Activa + Databank Masivo"
+        "testBoth": "Activa + Databank Masivo",
+        "loadingSavedData": "Cargando datos guardados del Monkey Test…",
+        "dataLoadedFromExport": "Cargado desde caché (periodo: {period} · generado: {date} · origen: {source})",
+        "dataLoadedApprox": "Cargado desde caché (aproximado — sin fingerprint)",
+        "noMatchingData": "No hay datos en caché que coincidan con el periodo de esta estrategia. Ejecuta el Custom Analysis o pulsa 'Ejecutar Monkey Test'.",
+        "temporalMismatch": "Los datos en caché no coinciden con el periodo actual (puede que la estrategia haya sido re-backtesteada).",
+        "fetchError": "Error al cargar datos en caché: {error}",
+        "sourceBadgeCA": "Custom Analysis",
+        "sourceBadgePlugin": "Cálculo del plugin",
+        "deleteCachedData": "Borrar datos en caché",
+        "deleteConfirm": "¿Borrar datos en caché del Monkey Test para {scope}? Esta acción no puede deshacerse.",
+        "cacheDeleted": "Datos en caché borrados.",
+        "cacheSaved": "Resultados guardados en caché.",
+        "cacheSaveFailed": "No se pudo guardar en caché: {error}",
+        "cacheWriteManual": "Mueve los archivos descargados a la carpeta cache/ dentro del plugin para habilitar la carga automática.",
+        "cacheDeleteUnavailable": "El borrado de archivos no está disponible en esta versión de SQX. Borra los archivos manualmente desde la carpeta cache/ del plugin.",
+        "saveTestCacheData": "Guardar datos en caché",
+        "saveTestCacheDataTip": "Guarda el CSV de simulación + metadatos en disco.\nPermite recargar los gráficos sin recalcular.\nRecomendado: .../DatabankMonkeyTest/cache/",
+        "savingCache": "Guardando…",
+        "cacheSaveSuccess": "Guardadas {count} estrategia(s) en la carpeta seleccionada."
       }
     };
 
@@ -1141,6 +1305,18 @@
         // SQX Files and validation
         const sqxFiles = ref(new Map()); // map of strategyName -> File object
         const sqxValidationError = ref('');
+
+        // Cache (auto-load) state
+        const cacheStatus   = ref('idle'); // 'idle'|'loading'|'loaded'|'approx'|'none'|'mismatch'|'error'
+        const cacheInfo     = ref(null);   // { period, generatedAtUtc, source }
+        const cacheError    = ref('');
+        const lastOrdersRaw = ref(null);   // raw orders from ORDERS_RESPONSE for buildRealEquity
+
+        // Cache save (write) state
+        const isSavingCache = ref(false);
+        const cacheSaveMsg  = ref('');
+        const tipVisible    = ref(false);
+        const tipStyle      = ref({});
 
         const passedStrategiesCount = computed(() => {
           return bulkResults.value.filter(res => res.status === 'PASSED').length;
@@ -1218,20 +1394,20 @@
             let h = parseInt(mCompactTime[4]);
             let min = parseInt(mCompactTime[5]);
             let sec = mCompactTime[6] ? parseInt(mCompactTime[6]) : 0;
-            return new Date(y, mon, d, h, min, sec).getTime();
+            return Date.UTC(y, mon, d, h, min, sec);
           }
 
           // Compact format YYYYMMDD
           if (/^\d{8}$/.test(s)) {
             let y = parseInt(s.substring(0, 4)), mon = parseInt(s.substring(4, 6)) - 1, d = parseInt(s.substring(6, 8));
-            return new Date(y, mon, d).getTime();
+            return Date.UTC(y, mon, d);
           }
 
           // Compact format YYYYMMDDHHMMSS
           if (/^\d{14}$/.test(s)) {
             let y = parseInt(s.substring(0, 4)), mon = parseInt(s.substring(4, 6)) - 1, d = parseInt(s.substring(6, 8));
             let h = parseInt(s.substring(8, 10)), min = parseInt(s.substring(10, 12)), sec = parseInt(s.substring(12, 14));
-            return new Date(y, mon, d, h, min, sec).getTime();
+            return Date.UTC(y, mon, d, h, min, sec);
           }
 
           // Format yyyy.MM.dd HH:mm
@@ -1241,7 +1417,7 @@
             let h = m[4] ? parseInt(m[4]) : 0;
             let min = m[5] ? parseInt(m[5]) : 0;
             let sec = m[6] ? parseInt(m[6]) : 0;
-            return new Date(y, mon, d, h, min, sec).getTime();
+            return Date.UTC(y, mon, d, h, min, sec);
           }
 
           // Format dd.MM.yyyy HH:mm
@@ -1251,7 +1427,7 @@
             let h = m[4] ? parseInt(m[4]) : 0;
             let min = m[5] ? parseInt(m[5]) : 0;
             let sec = m[6] ? parseInt(m[6]) : 0;
-            return new Date(y, mon, d, h, min, sec).getTime();
+            return Date.UTC(y, mon, d, h, min, sec);
           }
 
           let parsed = Date.parse(s);
@@ -1621,6 +1797,7 @@
                   bulkStrategies.value = parsedList;
                   bulkResults.value = [];
                   validateSqxFiles();
+                  bulkAutoLoadCache();
                 }
               } catch (err) {
                 errorMessage.value = "CSV Error: " + err.message;
@@ -1775,6 +1952,465 @@
         };
 
         // ===================================================================
+        // MonkeyCache layer — auto-load from cache/
+        // ===================================================================
+
+        const BASE_EXPORT = 'cache/';
+        const TOL_MS      = 7_200_000; // 2 h — absorbs timezone + broker offset
+
+        const computeStrategyRange = (trades, periodType) => {
+          const pUpper = (periodType || 'FULL').toUpperCase();
+          let filtered = trades;
+          if (pUpper === 'IS')  filtered = trades.filter(t => t.SampleType === 10);
+          if (pUpper === 'OOS') filtered = trades.filter(t => t.SampleType === 20);
+          // Skip rows where open===close and PL===0 (balance/commission entries)
+          filtered = filtered.filter(t => !(t.OpenTime === t.CloseTime && t.ProfitLoss === 0));
+          if (filtered.length === 0) return null;
+          return {
+            fromMs: Math.min(...filtered.map(t => t.OpenTime)),
+            toMs:   Math.max(...filtered.map(t => t.CloseTime))
+          };
+        };
+
+        const discoverCandidates = async (strategyName) => {
+          const base     = `${BASE_EXPORT}${strategyName}_monkey_simulation_data`;
+          const suffixes = ['', '_2', '_3', '_4', '_5'];
+          const candidates = [];
+          for (const sfx of suffixes) {
+            const csvUrl  = `${base}${sfx}.csv`;
+            const metaUrl = `${base}${sfx}.meta.json`;
+            try {
+              const r = await fetch(csvUrl, { cache: 'no-store' });
+              if (!r.ok) break; // first 404 → stop probing
+              let meta = null;
+              try {
+                const mr = await fetch(metaUrl, { cache: 'no-store' });
+                if (mr.ok) meta = await mr.json();
+              } catch (_) {}
+              candidates.push({ csvUrl, meta });
+            } catch (_) { break; }
+          }
+          return candidates;
+        };
+
+        const matchesMeta = (meta, ranges) => {
+          if (!meta || !ranges) return false;
+          const pKey  = (meta.period || 'FULL').toUpperCase();
+          const range = pKey === 'IS' ? ranges.is : pKey === 'OOS' ? ranges.oos : ranges.full;
+          if (!range) return false;
+          return Math.abs(meta.tradeFromMs - range.fromMs) <= TOL_MS &&
+                 Math.abs(meta.tradeToMs   - range.toMs)   <= TOL_MS;
+        };
+
+        const matchesFallback = (csvText, ranges) => {
+          const lines   = csvText.split(/\r?\n/).filter(l => l.trim());
+          if (lines.length < 2) return false;
+          const headers = lines[0].split(';').map(h => h.replace(/"/g, '').trim().toLowerCase());
+          const idxOpen  = headers.indexOf('open time');
+          const idxClose = headers.indexOf('close time');
+          if (idxOpen === -1) return false;
+          const times = [];
+          for (let i = 1; i < lines.length; i++) {
+            const cols = lines[i].split(';');
+            const t1 = parseDate(cols[idxOpen]?.replace(/"/g, '').trim());
+            const t2 = idxClose !== -1 ? parseDate(cols[idxClose]?.replace(/"/g, '').trim()) : 0;
+            if (t1 > 0) times.push(t1);
+            if (t2 > 0) times.push(t2);
+          }
+          if (times.length === 0) return false;
+          const fromMs = Math.min(...times);
+          const toMs   = Math.max(...times);
+          for (const range of [ranges.full, ranges.is, ranges.oos]) {
+            if (!range) continue;
+            if (Math.abs(fromMs - range.fromMs) <= TOL_MS && Math.abs(toMs - range.toMs) <= TOL_MS) return true;
+          }
+          return false;
+        };
+
+        const selectBestCandidate = (candidates) => {
+          return candidates.reduce((best, c) => {
+            if (!best) return c;
+            return (c.meta?.generatedAtUtc || 0) > (best.meta?.generatedAtUtc || 0) ? c : best;
+          }, null);
+        };
+
+        const parseCsvToMonkeyData = (csvText) => {
+          const lines = csvText.split(/\r?\n/).filter(l => l.trim());
+          if (lines.length < 2) throw new Error('CSV empty');
+          const unq        = (s) => s.replace(/^"|"$/g, '').trim();
+          const parseMoney = (s) => parseFloat(unq(s).replace(',', '.'));
+          const headers = lines[0].split(';').map(h => unq(h).toLowerCase());
+          const idxId  = headers.indexOf('monkey id');
+          const idxBal = headers.indexOf('balance');
+          const idxPL  = headers.indexOf('profit/loss');
+          if (idxId === -1 || idxBal === -1 || idxPL === -1) throw new Error('Missing columns in CSV');
+          const monkeyMap = new Map();
+          for (let i = 1; i < lines.length; i++) {
+            const cols = lines[i].split(';');
+            if (cols.length <= Math.max(idxId, idxBal, idxPL)) continue;
+            const id  = unq(cols[idxId]);
+            const bal = parseMoney(cols[idxBal]);
+            const pl  = parseMoney(cols[idxPL]);
+            if (!id || isNaN(bal) || isNaN(pl)) continue;
+            if (!monkeyMap.has(id)) monkeyMap.set(id, { balances: [], pls: [] });
+            monkeyMap.get(id).balances.push(bal);
+            monkeyMap.get(id).pls.push(pl);
+          }
+          if (monkeyMap.size === 0) throw new Error('No monkey data in CSV');
+          const monkeyProfits  = [];
+          const monkeyEquities = [];
+          let mIdx = 0;
+          for (const [, { balances, pls }] of monkeyMap) {
+            const initBal = balances[0] - pls[0];
+            monkeyProfits.push(balances[balances.length - 1] - initBal);
+            if (mIdx < 50) monkeyEquities.push([initBal, ...balances]);
+            mIdx++;
+          }
+          monkeyProfits.sort((a, b) => a - b);
+          return { monkeyProfits, monkeyEquities };
+        };
+
+        const buildRealEquity = (trades, periodType) => {
+          const pUpper = (periodType || 'FULL').toUpperCase();
+          let filtered = trades;
+          if (pUpper === 'IS')  filtered = trades.filter(t => t.SampleType === 10);
+          if (pUpper === 'OOS') filtered = trades.filter(t => t.SampleType === 20);
+          filtered = filtered.filter(t => !(t.OpenTime === t.CloseTime && t.ProfitLoss === 0));
+          if (filtered.length === 0) return { realEquity: [0], realReturn: 0 };
+          let bal = filtered[0].Balance - filtered[0].ProfitLoss;
+          const realEquity = [bal];
+          for (const tr of filtered) { bal += tr.ProfitLoss; realEquity.push(bal); }
+          return { realEquity, realReturn: realEquity[realEquity.length - 1] - realEquity[0] };
+        };
+
+        const buildKpis = (monkeyProfits, realReturn, meta, trades) => {
+          const numMonkeys  = monkeyProfits.length;
+          const pct         = meta?.percentile ?? settings.percentile;
+          const mean        = monkeyProfits.reduce((s, x) => s + x, 0) / numMonkeys;
+          const variance    = monkeyProfits.reduce((s, x) => s + Math.pow(x - mean, 2), 0) / (numMonkeys - 1);
+          const std         = Math.sqrt(variance);
+          const zScore      = std > 0 ? (realReturn - mean) / std : 0.0;
+          const threshIdx   = Math.min(Math.floor(numMonkeys * (pct / 100)), numMonkeys - 1);
+          const threshold   = monkeyProfits[threshIdx];
+          const beaten      = monkeyProfits.filter(p => realReturn > p).length;
+          const pUpper = (meta?.period || 'FULL').toUpperCase();
+          let filtered = trades;
+          if (pUpper === 'IS')  filtered = trades.filter(t => t.SampleType === 10);
+          if (pUpper === 'OOS') filtered = trades.filter(t => t.SampleType === 20);
+          filtered = filtered.filter(t => !(t.OpenTime === t.CloseTime && t.ProfitLoss === 0));
+          const status = filtered.length < 20 ? 'LOW TRADES' : (realReturn > threshold ? 'PASSED' : 'FAILED');
+          return {
+            realReturn, monkeyThreshold: threshold,
+            meanMonkey: mean, stdMonkey: std, zScore,
+            rankPercentile: (beaten / numMonkeys) * 100, status
+          };
+        };
+
+        // --- Cache schema v2 readers ---------------------------------------
+        // Wide CSV: row 0 = header (monkey_id;b0;b1;...), then one row per curve.
+        const parseCacheCsvV2 = (csvText) => {
+          const lines = csvText.split(/\r?\n/).filter(l => l.trim());
+          if (lines.length < 2) throw new Error('Cache CSV empty');
+          const curves = [];
+          for (let i = 1; i < lines.length; i++) {
+            const cols = lines[i].split(';');
+            const vals = cols.slice(1).map(Number).filter(v => !isNaN(v));
+            if (vals.length) curves.push(vals);
+          }
+          if (!curves.length) throw new Error('No curves in cache CSV');
+          return curves;
+        };
+
+        // KPIs for v2: monkeyThreshold/mean/std are dumped from the full-N calc and
+        // read DIRECTLY from meta (never recomputed from the 50 saved curves).
+        // zScore/rankPercentile/status are recomputed against the live realReturn.
+        const buildKpisFromMeta = (meta, realReturn, trades) => {
+          const profits   = meta.monkeyProfits || [];
+          const mean      = meta.meanMonkey;
+          const std       = meta.stdMonkey;
+          const threshold = meta.monkeyThreshold;
+          const zScore    = (typeof std === 'number' && std > 0) ? (realReturn - mean) / std : 0.0;
+          const beaten    = profits.filter(p => realReturn > p).length;
+          const rankPct   = profits.length ? (beaten / profits.length) * 100 : 0;
+          const pUpper    = (meta.period || 'FULL').toUpperCase();
+          let filtered = trades;
+          if (pUpper === 'IS')  filtered = trades.filter(t => t.SampleType === 10);
+          if (pUpper === 'OOS') filtered = trades.filter(t => t.SampleType === 20);
+          filtered = filtered.filter(t => !(t.OpenTime === t.CloseTime && t.ProfitLoss === 0));
+          const status = filtered.length < 20 ? 'LOW TRADES' : (realReturn > threshold ? 'PASSED' : 'FAILED');
+          return { realReturn, monkeyThreshold: threshold, meanMonkey: mean, stdMonkey: std, zScore, rankPercentile: rankPct, status };
+        };
+
+        // Applies a live bulkResults entry as the active result (no cache file involved).
+        const applyBulkFallback = (bulkEntry) => {
+          activeResult.value = bulkEntry;
+          cacheStatus.value  = 'idle'; // no badge — result came from live memory, not disk
+          cacheInfo.value    = null;
+          nextTick(() => drawActiveCharts());
+        };
+
+        const attemptAutoLoad = async (strategyName, trades) => {
+          try {
+            const candidates = await discoverCandidates(strategyName);
+            if (candidates.length === 0) {
+              // No cache files at all — fall back to live bulkResults
+              const bulkFallback = bulkResults.value.find(r => r.name === strategyName);
+              if (bulkFallback) { applyBulkFallback(bulkFallback); return; }
+              cacheStatus.value = 'none'; return;
+            }
+
+            const ranges = {
+              full: computeStrategyRange(trades, 'FULL'),
+              is:   computeStrategyRange(trades, 'IS'),
+              oos:  computeStrategyRange(trades, 'OOS')
+            };
+
+            const matching = [];
+            for (const c of candidates) {
+              if (c.meta) {
+                if (matchesMeta(c.meta, ranges)) matching.push({ ...c, approximate: false });
+              } else {
+                try {
+                  const r = await fetch(c.csvUrl, { cache: 'no-store' });
+                  const csvText = await r.text();
+                  if (matchesFallback(csvText, ranges)) matching.push({ ...c, csvText, approximate: true });
+                } catch (_) {}
+              }
+            }
+
+            if (matching.length === 0) {
+              // Cache exists but period doesn't match — fall back to live bulkResults
+              const bulkFallback = bulkResults.value.find(r => r.name === strategyName);
+              if (bulkFallback) { applyBulkFallback(bulkFallback); return; }
+              cacheStatus.value = 'mismatch'; return;
+            }
+
+            const best = selectBestCandidate(matching);
+            let csvText = best.csvText;
+            if (!csvText) {
+              const r = await fetch(best.csvUrl, { cache: 'no-store' });
+              csvText = await r.text();
+            }
+
+            const pUpper     = (best.meta?.period || 'FULL').toUpperCase();
+            const periodNorm = pUpper === 'IS' ? 'IS' : pUpper === 'OOS' ? 'OOS' : 'FULL';
+            const { realEquity, realReturn } = buildRealEquity(trades, periodNorm);
+
+            let monkeyProfits, monkeyEquities, kpis, initialBalance;
+            if (best.meta && Number(best.meta.schemaVersion) >= 2) {
+              // v2: curves from the wide CSV; profits + threshold (full-N) from meta
+              monkeyEquities = parseCacheCsvV2(csvText);
+              monkeyProfits  = (best.meta.monkeyProfits || []).slice().sort((a, b) => a - b);
+              initialBalance = best.meta.initialBalance;
+              kpis = buildKpisFromMeta(best.meta, realReturn, trades);
+            } else {
+              // v1 legacy: trade-level CSV → derive everything from it
+              const parsed = parseCsvToMonkeyData(csvText);
+              monkeyProfits  = parsed.monkeyProfits;
+              monkeyEquities = parsed.monkeyEquities;
+              kpis = buildKpis(monkeyProfits, realReturn, best.meta, trades);
+            }
+
+            const result = {
+              ...kpis, monkeyProfits, monkeyEquities, realEquity,
+              initialBalance,
+              period: periodNorm === 'FULL' ? 'Full' : periodNorm,
+              name: strategyName, fromExport: true,
+              source: best.meta?.source || 'CustomAnalysis',
+              generatedAtUtc: best.meta?.generatedAtUtc || null,
+              approximate: best.approximate
+            };
+            // result.trades intentionally omitted: CSV has monkey trades, not real trades
+
+            activeResult.value  = result;
+            cacheStatus.value   = best.approximate ? 'approx' : 'loaded';
+            cacheInfo.value     = { period: result.period, generatedAtUtc: result.generatedAtUtc, source: result.source };
+            nextTick(() => drawActiveCharts());
+          } catch (err) {
+            cacheStatus.value = 'error';
+            cacheError.value  = String(err.message || err);
+          }
+        };
+
+        const bulkAutoLoadCache = async () => {
+          if (!bulkStrategies.value.length) return;
+          const loaded = [];
+          for (const strategy of bulkStrategies.value) {
+            try {
+              const candidates = await discoverCandidates(strategy.name);
+              if (!candidates.length) continue;
+              const ranges = {
+                full: computeStrategyRange(strategy.trades, 'FULL'),
+                is:   computeStrategyRange(strategy.trades, 'IS'),
+                oos:  computeStrategyRange(strategy.trades, 'OOS')
+              };
+              const matching = candidates.filter(c => c.meta && matchesMeta(c.meta, ranges));
+              if (!matching.length) continue;
+              const best = selectBestCandidate(matching);
+              const r = await fetch(best.csvUrl, { cache: 'no-store' });
+              const csvText = await r.text();
+              const pNorm = ((best.meta?.period || 'FULL').toUpperCase() === 'IS')  ? 'IS'
+                          : ((best.meta?.period || 'FULL').toUpperCase() === 'OOS') ? 'OOS' : 'FULL';
+              const { realEquity, realReturn } = buildRealEquity(strategy.trades, pNorm);
+              let monkeyProfits, monkeyEquities, kpis, initialBalance;
+              if (best.meta && Number(best.meta.schemaVersion) >= 2) {
+                monkeyEquities = parseCacheCsvV2(csvText);
+                monkeyProfits  = (best.meta.monkeyProfits || []).slice().sort((a, b) => a - b);
+                initialBalance = best.meta.initialBalance;
+                kpis = buildKpisFromMeta(best.meta, realReturn, strategy.trades);
+              } else {
+                const parsed = parseCsvToMonkeyData(csvText);
+                monkeyProfits  = parsed.monkeyProfits;
+                monkeyEquities = parsed.monkeyEquities;
+                kpis = buildKpis(monkeyProfits, realReturn, best.meta, strategy.trades);
+              }
+              loaded.push({
+                ...kpis, monkeyProfits, monkeyEquities, realEquity, initialBalance,
+                period: pNorm === 'FULL' ? 'Full' : pNorm,
+                name: strategy.name, fromExport: true,
+                source: best.meta?.source || 'CustomAnalysis',
+                generatedAtUtc: best.meta?.generatedAtUtc || null,
+                trades: strategy.trades
+              });
+            } catch (_) { /* no cache for this strategy */ }
+          }
+          if (loaded.length > 0) {
+            bulkResults.value = loaded;
+            // Sync: if the active strategy is among loaded results, apply it to Active tab
+            const activeMatch = loaded.find(r => r.name === activeStrategy.value?.name);
+            if (activeMatch) applyBulkFallback(activeMatch);
+          }
+        };
+
+        const hasAnyResult = computed(() =>
+          !!(activeResult.value?.trades) || bulkResults.value.some(r => r?.trades)
+        );
+
+        const canSaveAny = computed(() =>
+          hasAnyResult.value &&
+          !isCalculating.value &&
+          !isSavingCache.value &&
+          typeof window.showDirectoryPicker === 'function'
+        );
+
+        // v2 meta: fingerprint + KPIs from the full-N calc + N monkey profits (histogram).
+        const buildPluginMeta = (strategyName, trades, result, cfg) => {
+          const period = (result.period || 'Full').toUpperCase() === 'FULL'
+            ? 'FULL' : (result.period || 'Full').toUpperCase();
+          const range  = computeStrategyRange(trades, period);
+          const real   = trades.filter(t => !(t.OpenTime === t.CloseTime && t.ProfitLoss === 0));
+          let filtered = real;
+          if (period === 'IS')  filtered = real.filter(t => t.SampleType === 10);
+          if (period === 'OOS') filtered = real.filter(t => t.SampleType === 20);
+          const round2 = (v) => (typeof v === 'number' && isFinite(v)) ? Math.round(v * 100) / 100 : v;
+          return {
+            schemaVersion: 2,
+            strategyName,
+            period,
+            tradeFromMs:    range?.fromMs || 0,
+            tradeToMs:      range?.toMs   || 0,
+            numTrades:      filtered.length,
+            numMonkeys:     result.numMonkeys ?? cfg.numMonkeys,
+            percentile:     cfg.percentile,
+            initialBalance: result.initialBalance ?? (result.realEquity ? result.realEquity[0] : 0),
+            realProfit:     result.realReturn,
+            monkeyThreshold: result.monkeyThreshold,
+            meanMonkey:     result.meanMonkey,
+            stdMonkey:      result.stdMonkey,
+            zScore:         result.zScore,
+            rankPercentile: result.rankPercentile,
+            status:         result.status,
+            monkeyProfits:  (result.monkeyProfits || []).map(round2),
+            generatedAtUtc: Date.now(),
+            source: 'Plugin'
+          };
+        };
+
+        // Wide CSV: header monkey_id;b0;b1;... then one row per selected equity curve.
+        const serializeCacheCsv = (result) => {
+          const curves = result.monkeyEquities || [];
+          if (!curves.length) return '';
+          const ncols  = curves[0].length;
+          const header = ['monkey_id', ...Array.from({ length: ncols }, (_, i) => 'b' + i)].join(';');
+          const round2 = (v) => Math.round(v * 100) / 100;
+          const rows = curves.map((c, i) => {
+            const label = i === 0 ? 'min'
+              : i === curves.length - 1 ? 'max'
+              : 'q' + String(i).padStart(2, '0');
+            return label + ';' + c.map(round2).join(';');
+          });
+          return [header, ...rows].join('\r\n');
+        };
+
+        const saveAllCacheData = async () => {
+          if (!canSaveAny.value) return;
+          isSavingCache.value = true;
+          cacheSaveMsg.value  = '';
+          try {
+            // showDirectoryPicker MUST be the first await — browser loses user-gesture context across prior awaits
+            const dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+            const written   = new Set();
+            let count = 0;
+
+            const writeStrategy = async (res) => {
+              if (written.has(res.name)) return;
+              written.add(res.name);
+              const base     = `${res.name}_monkey_simulation_data`;
+              // Instant: serialize the in-memory cache payload (≤50 curves) — no re-simulation.
+              const csvText  = serializeCacheCsv(res);
+              const metaText = JSON.stringify(buildPluginMeta(res.name, res.trades, res, settings), null, 2);
+              for (const [fn, content] of [[`${base}.csv`, csvText], [`${base}.meta.json`, metaText]]) {
+                const fh = await dirHandle.getFileHandle(fn, { create: true });
+                const w  = await fh.createWritable();
+                await w.write(content);
+                await w.close();
+              }
+              count++;
+            };
+
+            if (activeResult.value?.trades) await writeStrategy(activeResult.value);
+            for (const res of bulkResults.value) {
+              if (res?.trades) await writeStrategy(res);
+            }
+            cacheSaveMsg.value = t('cacheSaveSuccess', { count });
+            setTimeout(() => { cacheSaveMsg.value = ''; }, 5000);
+          } catch (err) {
+            if (err.name !== 'AbortError') {
+              cacheSaveMsg.value = t('cacheSaveFailed', { error: err.message });
+            }
+          } finally {
+            isSavingCache.value = false;
+          }
+        };
+
+        const onTipEnter = (e) => {
+          const rect = e.currentTarget.getBoundingClientRect();
+          tipStyle.value = {
+            left:      rect.left + 'px',
+            top:       (rect.top - 10) + 'px',
+            transform: 'translateY(-100%)'
+          };
+          tipVisible.value = true;
+        };
+
+        const cacheBadgeText = computed(() => {
+          const s = cacheStatus.value;
+          if (s === 'loading')  return t('loadingSavedData');
+          if (s === 'none')     return t('noMatchingData');
+          if (s === 'mismatch') return t('temporalMismatch');
+          if (s === 'error')    return t('fetchError', { error: cacheError.value });
+          if (s === 'approx')   return t('dataLoadedApprox');
+          if (s === 'loaded' && cacheInfo.value) {
+            const src     = cacheInfo.value.source === 'CustomAnalysis' ? t('sourceBadgeCA') : t('sourceBadgePlugin');
+            const dateStr = cacheInfo.value.generatedAtUtc
+              ? new Date(cacheInfo.value.generatedAtUtc).toLocaleDateString()
+              : '?';
+            return t('dataLoadedFromExport', { period: cacheInfo.value.period, date: dateStr, source: src });
+          }
+          return '';
+        });
+
+        // ===================================================================
         // PostMessage integration with StrategyQuantX
         // ===================================================================
         const handleMessage = (e) => {
@@ -1798,6 +2434,11 @@
 
           if (type === 'STRATEGY_DATA') {
             if (!data?.strategyName) return;
+            // Reset cache state for new strategy
+            cacheStatus.value  = 'idle';
+            cacheInfo.value    = null;
+            cacheError.value   = '';
+            activeResult.value = null;
             // SQX strategy selected: request its order list
             activeStrategy.value = {
               name: data.strategyName,
@@ -1857,6 +2498,11 @@
             // Sort chronologically
             list.sort((a, b) => a.OpenTime - b.OpenTime);
             activeStrategy.value.trades = list;
+
+            // Store raw orders and trigger auto-load (always, regardless of testTarget)
+            lastOrdersRaw.value = data.orders;
+            cacheStatus.value = 'loading';
+            attemptAutoLoad(activeStrategy.value.name, list);
           }
         };
 
@@ -2004,7 +2650,7 @@
               let realProfit = realEquity[realEquity.length - 1] - realEquity[0];
 
               const monkeyProfits = [];
-              const monkeyEquities = [];
+              const allCurves = [];   // transient: all N curves, pruned to ≤50 below
 
               for (let m = 0; m < numMonkeys; m++) {
                 let shift = Math.floor(Math.random() * (M - 1)) + 1;
@@ -2115,20 +2761,33 @@
                 }
 
                 monkeyProfits.push(runningBalance - monkeyCurve[0]);
-                if (m < 50) {
-                  monkeyEquities.push(monkeyCurve);
-                }
+                allCurves.push(monkeyCurve);
               }
 
-              monkeyProfits.sort((a, b) => a - b);
-              let meanMonkey = monkeyProfits.reduce((s, x) => s + x, 0) / numMonkeys;
-              let variance = monkeyProfits.reduce((s, x) => s + Math.pow(x - meanMonkey, 2), 0) / (numMonkeys - 1);
+              // Rank monkeys by profit (ascending) keeping the curve↔profit pairing.
+              const order = monkeyProfits.map((_, i) => i).sort((a, b) => monkeyProfits[a] - monkeyProfits[b]);
+              const sortedProfits = order.map(i => monkeyProfits[i]);
+
+              // Select ≤50 equity curves for visualization: worst (min), best (max) and
+              // 48 intermediate monkeys spread evenly by rank percentile.
+              let pickRanks;
+              if (numMonkeys <= 50) {
+                pickRanks = order.map((_, r) => r);
+              } else {
+                const set = new Set([0, numMonkeys - 1]);
+                for (let k = 1; k <= 48; k++) set.add(Math.round(k * (numMonkeys - 1) / 49));
+                pickRanks = Array.from(set).sort((a, b) => a - b);
+              }
+              const monkeyEquities = pickRanks.map(r => allCurves[order[r]]);
+
+              let meanMonkey = sortedProfits.reduce((s, x) => s + x, 0) / numMonkeys;
+              let variance = sortedProfits.reduce((s, x) => s + Math.pow(x - meanMonkey, 2), 0) / (numMonkeys - 1);
               let stdMonkey = Math.sqrt(variance);
 
               let zScore = stdMonkey > 0 ? (realProfit - meanMonkey) / stdMonkey : 0.0;
-              let thresholdVal = monkeyProfits[Math.floor(numMonkeys * (percentile / 100))];
+              let thresholdVal = sortedProfits[Math.min(Math.floor(numMonkeys * (percentile / 100)), numMonkeys - 1)];
 
-              let beatenCount = monkeyProfits.filter(p => realProfit > p).length;
+              let beatenCount = sortedProfits.filter(p => realProfit > p).length;
               let rankPercentile = (beatenCount / numMonkeys) * 100;
 
               let status = 'FAILED';
@@ -2146,9 +2805,11 @@
                 zScore,
                 rankPercentile,
                 status,
-                monkeyProfits,
+                monkeyProfits: sortedProfits,
                 monkeyEquities,
                 realEquity,
+                initialBalance: realEquity[0],
+                numMonkeys: numMonkeys,
                 period: settings.period
               };
             }
@@ -2218,9 +2879,13 @@
                 result.name = activeStrategy.value.name;
                 result.trades = activeStrategy.value.trades;
                 activeResult.value = result;
-                nextTick(() => {
-                  drawActiveCharts();
-                });
+                // Sync: update matching bulkResults entry so Bulk tab shows fresh data
+                const bulkIdx = bulkResults.value.findIndex(r => r.name === result.name);
+                if (bulkIdx !== -1) {
+                  bulkResults.value[bulkIdx] = { ...result };
+                  nextTick(() => drawBulkPie());
+                }
+                nextTick(() => { drawActiveCharts(); });
               } else {
                 activeResult.value = null;
               }
@@ -2254,9 +2919,12 @@
               currentProcessingName.value = currentName;
               if (result) {
                 bulkResults.value.push(result);
-                nextTick(() => {
-                  drawBulkPie();
-                });
+                // Sync: if this strategy is the active one, update Active tab immediately
+                if (activeStrategy.value?.name === result.name) {
+                  activeResult.value = result;
+                  nextTick(() => drawActiveCharts());
+                }
+                nextTick(() => { drawBulkPie(); });
               }
             }
 
@@ -2302,6 +2970,8 @@
         // ===================================================================
         const runActiveStrategyTest = () => {
           if (!activeStrategy.value || priceData.value.length === 0) return;
+          cacheStatus.value = 'idle';
+          cacheInfo.value   = null;
           initActiveWorker();
           isCalculatingActive.value = true;
           activeWorker.postMessage({
@@ -2345,10 +3015,7 @@
           });
         };
 
-        const exportMonkeyData = (res) => {
-          if (!res || !res.trades || priceData.value.length === 0) return;
-
-          const candles = priceData.value;
+        const buildCsvString = (res, settings, candles) => {
           const trades = res.trades;
           const numMonkeys = settings.numMonkeys;
           const tfMs = inferTimeframeMs(candles);
@@ -2363,7 +3030,7 @@
             filteredTrades = trades.filter(t => t.SampleType === filterSampleType);
           }
 
-          if (filteredTrades.length === 0) return;
+          if (filteredTrades.length === 0) return '';
 
           const { hasFriday, exitHour, exitMinute } = detectFridayExit(trades);
 
@@ -2671,15 +3338,24 @@
             }
           }
 
-          // 6. Trigger download
-          const blob = new Blob([csvRows.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+          return csvRows.join('\r\n');
+        };
+
+        const triggerDownload = (csvText, filename) => {
+          const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
           const url = URL.createObjectURL(blob);
           const link = document.createElement("a");
           link.setAttribute("href", url);
-          link.setAttribute("download", `${res.name}_monkey_simulation_data.csv`);
+          link.setAttribute("download", filename);
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
+        };
+
+        const exportMonkeyData = (res) => {
+          if (!res || !res.trades || priceData.value.length === 0) return;
+          const csv = buildCsvString(res, settings, priceData.value);
+          triggerDownload(csv, `${res.name}_monkey_simulation_data.csv`);
         };
 
         const runMonkeyTest = () => {
@@ -3015,6 +3691,13 @@
         });
 
         // Initialize Resize Observers
+        // Redraw Active charts when switching to Active tab if result already in memory
+        watch(currentTab, (newTab) => {
+          if (newTab === 'active' && activeResult.value) {
+            nextTick(() => drawActiveCharts());
+          }
+        });
+
         onMounted(() => {
           window.addEventListener('message', handleMessage);
 
@@ -3088,11 +3771,22 @@
           hasPassedStrategies,
           loadSqxFiles,
           clearSqxFiles,
-          downloadPassedZip
+          downloadPassedZip,
+          cacheStatus,
+          cacheBadgeText,
+          isSavingCache,
+          cacheSaveMsg,
+          tipVisible,
+          tipStyle,
+          onTipEnter,
+          hasAnyResult,
+          canSaveAny,
+          saveAllCacheData
         };
       }
     }).mount('#app');
   </script>
+
 </body>
 
 </html>
