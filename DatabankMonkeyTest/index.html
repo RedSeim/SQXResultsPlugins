@@ -532,6 +532,18 @@
       line-height: 1;
       user-select: none;
     }
+    /* Sidebar tooltip icon */
+    .tip-icon-sidebar {
+      font-size: 11px;
+      color: var(--text-muted);
+      cursor: help;
+      margin-left: 4px;
+      user-select: none;
+      transition: color 0.15s;
+    }
+    .tip-icon-sidebar:hover {
+      color: var(--primary);
+    }
     /* Tooltip rendered via <teleport to="body"> to escape any overflow clipping */
     .save-tip-popup {
       position: fixed;
@@ -747,7 +759,12 @@
           </div>
           <!-- Price CSV upload -->
           <div class="form-group">
-            <label>{{ t('priceCsvLabel') }}</label>
+            <label style="display: flex; align-items: center; justify-content: space-between;">
+              <span>{{ t('priceCsvLabel') }}</span>
+              <span class="tip-icon-sidebar"
+                    @mouseenter.stop="showTooltip($event, 'priceCsvTip')"
+                    @mouseleave.stop="hideTooltip">ⓘ</span>
+            </label>
             <div v-if="priceData.length === 0" class="upload-box">
               <span class="icon">📈</span>
               <span style="font-size: 11px;">{{ t('priceCsvDropText') }}</span>
@@ -811,6 +828,45 @@
             </select>
           </div>
 
+          <!-- Evaluation Period -->
+          <div class="form-group">
+            <label>{{ t('periodLabel') }}</label>
+            <select class="form-control" v-model="settings.period">
+              <option value="Full">{{ t('periodFull') }}</option>
+              <option value="IS">{{ t('periodIS') }}</option>
+              <option value="OOS">{{ t('periodOOS') }}</option>
+            </select>
+          </div>
+
+          <!-- Replication Mode -->
+          <div class="form-group">
+            <label style="display: flex; align-items: center; justify-content: space-between;">
+              <span>{{ t('replicationModeLabel') }}</span>
+              <span class="tip-icon-sidebar" 
+                    @mouseenter.stop="showTooltip($event, 'replicationModeTip')" 
+                    @mouseleave.stop="hideTooltip">ⓘ</span>
+            </label>
+            <select class="form-control" v-model="settings.replicationMode">
+              <option value="SLTP">{{ t('replicationSLTP') }}</option>
+              <option value="AvgBars">{{ t('replicationAvgBars') }}</option>
+              <option value="IndivBars">{{ t('replicationIndivBars') }}</option>
+            </select>
+          </div>
+
+          <!-- Circular Shifting Mode -->
+          <div class="form-group">
+            <label style="display: flex; align-items: center; justify-content: space-between;">
+              <span>{{ t('shiftingModeLabel') }}</span>
+              <span class="tip-icon-sidebar" 
+                    @mouseenter.stop="showTooltip($event, 'shiftingModeTip')" 
+                    @mouseleave.stop="hideTooltip">ⓘ</span>
+            </label>
+            <select class="form-control" v-model="settings.shiftingMode">
+              <option value="Constant">{{ t('shiftingConstant') }}</option>
+              <option value="Random">{{ t('shiftingRandom') }}</option>
+            </select>
+          </div>
+
           <!-- Simulated Monkeys -->
           <div class="form-group">
             <label>{{ t('numMonkeys') }}: {{ settings.numMonkeys }}</label>
@@ -855,8 +911,8 @@
               {{ isSavingCache ? t('savingCache') : t('saveTestCacheData') }}
               <span
                 class="tip-icon-btn"
-                @mouseenter.stop="onTipEnter($event)"
-                @mouseleave.stop="tipVisible = false">ⓘ</span>
+                @mouseenter.stop="showTooltip($event, 'saveTestCacheDataTip')"
+                @mouseleave.stop="hideTooltip">ⓘ</span>
             </button>
             <div v-if="cacheSaveMsg" class="cache-save-msg" style="text-align: center; margin-top: 3px;">{{ cacheSaveMsg }}</div>
           </template>
@@ -992,7 +1048,6 @@
                 <span>{{ t('strategiesGrid') }}</span>
                 <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
 <button v-if="bulkResults.length > 0" class="btn btn-success btn-sm"
-                    :disabled="!hasPassedStrategies || sqxFiles.size === 0 || sqxValidationError"
                     @click="downloadPassedZip">
                     📦 {{ t('downloadPassedZip', { count: passedStrategiesCount }) }}
                   </button>
@@ -1077,9 +1132,9 @@
     <!-- Pinned Footer Disclaimer -->
     <div class="disclaimer" v-html="tHtml('disclaimerHtml')"></div>
 
-    <!-- Save cache tooltip — teleported to <body> to escape any overflow/z-index clipping -->
+    <!-- General Tooltip — teleported to <body> to escape overflow/z-index clipping -->
     <teleport to="body">
-      <div v-if="tipVisible" class="save-tip-popup" :style="tipStyle">{{ t('saveTestCacheDataTip') }}</div>
+      <div v-if="tooltipVisible" class="save-tip-popup" :style="tooltipStyle">{{ tooltipText }}</div>
     </teleport>
   </div>
 
@@ -1109,6 +1164,7 @@
         "subtitle": "Robustness validation comparing strategy performance against random time-shifted entries.",
         "parameters": "Test Parameters",
         "priceCsvLabel": "Historical Price CSV (OHLC)",
+        "priceCsvTip": "Historical Price CSV Format:\n• Required headers: DateTime, Open, High, Low, Close (Volume is optional).\n• Separators: Semicolon (;) or Comma (,).\n• No empty values or zero prices.\n• Make sure the price scale and timeframe match your strategy.",
         "priceCsvDropText": "Drag & drop Price CSV here or click to browse",
         "priceCsvLoaded": "Price data loaded successfully ({count} bars)",
         "bulkCsvLabel": "Bulk Trades CSV (Optional)",
@@ -1118,6 +1174,15 @@
         "periodFull": "Full Period (IS + OOS)",
         "periodIS": "In-Sample (IS) Only",
         "periodOOS": "Out-of-Sample (OOS) Only",
+        "replicationModeLabel": "Replication Mode",
+        "replicationSLTP": "SL & TP Distance",
+        "replicationAvgBars": "Fixed Average Exposure",
+        "replicationIndivBars": "Individual Trade Exposure",
+        "replicationModeTip": "Replication Mode:\n• SL & TP Distance: Replicates proportional SL/TP distances. Exits at SL/TP or trade duration.\n• Fixed Average Exposure: Ignores SL/TP. Closes all trades after the strategy's average trade duration.\n• Individual Trade Exposure: Ignores SL/TP. Closes each trade after its corresponding original duration in bars.",
+        "shiftingModeLabel": "Shifting Mode",
+        "shiftingConstant": "Constant Global Shift",
+        "shiftingRandom": "Per-Trade Random Shift",
+        "shiftingModeTip": "Circular Shifting Mode:\n• Constant Global Shift: Shifts all trades in a simulation by the same random temporal distance, keeping their relative spacing.\n• Per-Trade Random Shift: Shifts each trade by its own unique random distance, testing entry independence.",
         "mmLabel": "Money Management Mode",
         "mmFixed": "Fixed Amount (Price-Corrected)",
         "mmCompounding": "Proportional Risk (Compounding)",
@@ -1191,6 +1256,7 @@
         "subtitle": "Validación de robustez estadística comparando la estrategia contra entradas aleatorias desplazadas en el tiempo.",
         "parameters": "Parámetros del Test",
         "priceCsvLabel": "CSV de Precios Históricos (OHLC)",
+        "priceCsvTip": "Formato de CSV de Precios Históricos:\n• Cabeceras requeridas: DateTime, Open, High, Low, Close (Volume es opcional).\n• Separadores: Punto y coma (;) o Comma (,).\n• Sin celdas vacías ni precios en cero.\n• Asegúrate de que la escala de precios y temporalidad coincidan con tu estrategia.",
         "priceCsvDropText": "Arrastra el CSV de precios aquí o haz clic para buscar",
         "priceCsvLoaded": "Datos de precios cargados con éxito ({count} velas)",
         "bulkCsvLabel": "CSV de Operaciones Masivas (Opcional)",
@@ -1200,6 +1266,15 @@
         "periodFull": "Periodo Completo (IS + OOS)",
         "periodIS": "Solo In-Sample (IS)",
         "periodOOS": "Solo Out-of-Sample (OOS)",
+        "replicationModeLabel": "Modo de Replicación",
+        "replicationSLTP": "Distancia SL & TP",
+        "replicationAvgBars": "Exposición por Media Fija",
+        "replicationIndivBars": "Exposición por Duración Individual",
+        "replicationModeTip": "Modo de Replicación:\n• Distancia SL & TP: Replica distancias proporcionales de SL/TP. Sale por SL/TP o fin de duración.\n• Exposición por Media Fija: Ignora SL/TP. Cierra cada trade tras la duración media de los trades originales.\n• Exposición por Duración Individual: Ignora SL/TP. Cierra cada trade tras su respectiva duración original en barras.",
+        "shiftingModeLabel": "Modo de Desplazamiento",
+        "shiftingConstant": "Desplazamiento Global Constante",
+        "shiftingRandom": "Desplazamiento Aleatorio por Operación",
+        "shiftingModeTip": "Modo de Desplazamiento Circular:\n• Desplazamiento Global Constante: Desplaza todos los trades en una simulación la misma distancia temporal, manteniendo la separación relativa.\n• Desplazamiento Aleatorio por Operación: Desplaza cada trade de forma independiente para validar la robustez de la entrada.",
         "mmLabel": "Gestión Monetaria (MM)",
         "mmFixed": "Monto Fijo (Corregido por Precio)",
         "mmCompounding": "Riesgo Proporcional (Interés Compuesto)",
@@ -1285,7 +1360,9 @@
           mmMode: 'Fixed',
           testTarget: 'both',
           numMonkeys: 500,
-          percentile: 95.0
+          percentile: 95.0,
+          replicationMode: 'IndivBars',
+          shiftingMode: 'Random'
         });
 
         // Prices & Trades cache
@@ -1312,11 +1389,14 @@
         const cacheError    = ref('');
         const lastOrdersRaw = ref(null);   // raw orders from ORDERS_RESPONSE for buildRealEquity
 
+        // General Tooltip State
+        const tooltipText = ref('');
+        const tooltipVisible = ref(false);
+        const tooltipStyle = ref({});
+
         // Cache save (write) state
         const isSavingCache = ref(false);
         const cacheSaveMsg  = ref('');
-        const tipVisible    = ref(false);
-        const tipStyle      = ref({});
 
         const passedStrategiesCount = computed(() => {
           return bulkResults.value.filter(res => res.status === 'PASSED').length;
@@ -1593,7 +1673,11 @@
                 parsed.push(bar);
               }
 
-              if (parsed.length === 0) throw new Error("No valid price bars parsed from CSV.");
+              if (parsed.length === 0) {
+                const sampleLine = lines[headerIdx + 1] || '';
+                const sampleCols = sampleLine.split(separator).length;
+                throw new Error(`No valid price bars parsed. File has ${lines.length} lines. Delimiter: '${separator}'. Headers: [${headers.join(', ')}]. Indices: Date=${dateIdx}, Open=${openIdx}, High=${highIdx}, Low=${lowIdx}, Close=${closeIdx}. Sample line cols: ${sampleCols}.`);
+              }
 
               // Sort price bars chronologically
               parsed.sort((a, b) => a.time - b.time);
@@ -1906,10 +1990,36 @@
         };
 
         const downloadPassedZip = () => {
-          if (bulkResults.value.length === 0 || sqxFiles.value.size === 0 || sqxValidationError.value) return;
+          errorMessage.value = '';
+
+          if (bulkResults.value.length === 0) {
+            const msg = 'No test results available. Run Monkey Test first.';
+            errorMessage.value = msg;
+            alert(msg);
+            return;
+          }
+
+          if (sqxFiles.value.size === 0) {
+            const msg = 'No .sqx strategy files loaded. Upload them in the "SQX Strategy Files" section.';
+            errorMessage.value = msg;
+            alert(msg);
+            return;
+          }
+
+          if (sqxValidationError.value) {
+            const msg = 'SQX file validation failed: ' + sqxValidationError.value;
+            errorMessage.value = msg;
+            alert(msg);
+            return;
+          }
 
           const passed = bulkResults.value.filter(res => res.status === 'PASSED');
-          if (passed.length === 0) return;
+          if (passed.length === 0) {
+            const msg = 'No PASSED strategies to download.';
+            errorMessage.value = msg;
+            alert(msg);
+            return;
+          }
 
           const normalize = name => name.toLowerCase().replace(/[\s_\-\/]/g, '');
 
@@ -1924,6 +2034,7 @@
 
           const zip = new JSZip();
           let count = 0;
+          const notFound = [];
 
           passed.forEach(res => {
             const file = findFileForStrategy(res.name);
@@ -1931,11 +2042,15 @@
               const filename = file.name.endsWith('.sqx') ? file.name : `${file.name}.sqx`;
               zip.file(filename, file);
               count++;
+            } else {
+              notFound.push(res.name);
             }
           });
 
           if (count === 0) {
-            errorMessage.value = "No files found to package in ZIP.";
+            const msg = `Failed to match any .sqx files.\n\nPassed strategies: ${passed.map(p => p.name).join(', ')}\n\nLoaded files: ${Array.from(sqxFiles.value.keys()).join(', ')}`;
+            errorMessage.value = msg;
+            alert(msg);
             return;
           }
 
@@ -1946,8 +2061,11 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            errorMessage.value = '';
           }).catch(err => {
-            errorMessage.value = "ZIP generation failed: " + err.message;
+            const msg = "ZIP generation failed: " + err.message;
+            errorMessage.value = msg;
+            alert(msg);
           });
         };
 
@@ -1995,7 +2113,18 @@
 
         const matchesMeta = (meta, ranges) => {
           if (!meta || !ranges) return false;
-          const pKey  = (meta.period || 'FULL').toUpperCase();
+          const pKey = (meta.period || 'FULL').toUpperCase();
+          const selKey = (settings.period || 'FULL').toUpperCase();
+          if (pKey !== selKey) return false;
+
+          const repKey = meta.replicationMode || 'SLTP';
+          const selRepKey = settings.replicationMode || 'SLTP';
+          if (repKey !== selRepKey) return false;
+
+          const shfKey = meta.shiftingMode || 'Constant';
+          const selShfKey = settings.shiftingMode || 'Constant';
+          if (shfKey !== selShfKey) return false;
+
           const range = pKey === 'IS' ? ranges.is : pKey === 'OOS' ? ranges.oos : ranges.full;
           if (!range) return false;
           return Math.abs(meta.tradeFromMs - range.fromMs) <= TOL_MS &&
@@ -2003,6 +2132,10 @@
         };
 
         const matchesFallback = (csvText, ranges) => {
+          const selKey = (settings.period || 'FULL').toUpperCase();
+          const range = selKey === 'IS' ? ranges.is : selKey === 'OOS' ? ranges.oos : ranges.full;
+          if (!range) return false;
+
           const lines   = csvText.split(/\r?\n/).filter(l => l.trim());
           if (lines.length < 2) return false;
           const headers = lines[0].split(';').map(h => h.replace(/"/g, '').trim().toLowerCase());
@@ -2020,11 +2153,7 @@
           if (times.length === 0) return false;
           const fromMs = Math.min(...times);
           const toMs   = Math.max(...times);
-          for (const range of [ranges.full, ranges.is, ranges.oos]) {
-            if (!range) continue;
-            if (Math.abs(fromMs - range.fromMs) <= TOL_MS && Math.abs(toMs - range.toMs) <= TOL_MS) return true;
-          }
-          return false;
+          return Math.abs(fromMs - range.fromMs) <= TOL_MS && Math.abs(toMs - range.toMs) <= TOL_MS;
         };
 
         const selectBestCandidate = (candidates) => {
@@ -2312,6 +2441,8 @@
             numTrades:      filtered.length,
             numMonkeys:     result.numMonkeys ?? cfg.numMonkeys,
             percentile:     cfg.percentile,
+            replicationMode: cfg.replicationMode || 'SLTP',
+            shiftingMode:    cfg.shiftingMode    || 'Constant',
             initialBalance: result.initialBalance ?? (result.realEquity ? result.realEquity[0] : 0),
             realProfit:     result.realReturn,
             monkeyThreshold: result.monkeyThreshold,
@@ -2383,14 +2514,28 @@
           }
         };
 
-        const onTipEnter = (e) => {
+        const showTooltip = (e, textKey) => {
+          tooltipText.value = t(textKey);
           const rect = e.currentTarget.getBoundingClientRect();
-          tipStyle.value = {
-            left:      rect.left + 'px',
-            top:       (rect.top - 10) + 'px',
-            transform: 'translateY(-100%)'
-          };
-          tipVisible.value = true;
+          const showBelow = rect.top < 220;
+          if (showBelow) {
+            tooltipStyle.value = {
+              left:      rect.left + 'px',
+              top:       (rect.bottom + 10) + 'px',
+              transform: 'none'
+            };
+          } else {
+            tooltipStyle.value = {
+              left:      rect.left + 'px',
+              top:       (rect.top - 10) + 'px',
+              transform: 'translateY(-100%)'
+            };
+          }
+          tooltipVisible.value = true;
+        };
+
+        const hideTooltip = () => {
+          tooltipVisible.value = false;
         };
 
         const cacheBadgeText = computed(() => {
@@ -2649,11 +2794,22 @@
               }
               let realProfit = realEquity[realEquity.length - 1] - realEquity[0];
 
+              // Precalculate average holding bars for AvgBars replication mode
+              let avgHoldingBars = 4;
+              if (settings.replicationMode === 'AvgBars' && filteredTrades.length > 0) {
+                let totalBars = 0;
+                for (let k = 0; k < filteredTrades.length; k++) {
+                  totalBars += holdingBars(filteredTrades[k], tfMs);
+                }
+                avgHoldingBars = Math.round(totalBars / filteredTrades.length);
+                if (avgHoldingBars < 1) avgHoldingBars = 1;
+              }
+
               const monkeyProfits = [];
               const allCurves = [];   // transient: all N curves, pruned to ≤50 below
 
               for (let m = 0; m < numMonkeys; m++) {
-                let shift = Math.floor(Math.random() * (M - 1)) + 1;
+                let globalShift = Math.floor(Math.random() * (M - 1)) + 1;
                 let runningBalance = realEquity[0];
                 let monkeyCurve = [runningBalance];
 
@@ -2661,67 +2817,97 @@
                   let at = alignedTrades[k];
                   let origTrade = at.original;
                   
+                  let shift;
+                  if (settings.shiftingMode === 'Random') {
+                    shift = Math.floor(Math.random() * (M - 1)) + 1;
+                  } else {
+                    shift = globalShift;
+                  }
+
                   let r_prime = (at.r_i - shift) % M;
                   if (r_prime < 0) r_prime += M;
                   let t_prime = idxMin + r_prime;
 
                   let entryPrice = candles[t_prime].open;
 
-                  let hasSL = origTrade.SLLevel !== null && origTrade.SLLevel > 0 && origTrade.SLLevel !== -99999999 && origTrade.SLLevel !== origTrade.OpenPrice;
-                  let hasTP = origTrade.PTLevel !== null && origTrade.PTLevel > 0 && origTrade.PTLevel !== -99999999 && origTrade.PTLevel !== origTrade.OpenPrice;
-                  
-                  let sl_pct = hasSL ? Math.abs(origTrade.SLLevel - origTrade.OpenPrice) / origTrade.OpenPrice : 0.0;
-                  let tp_pct = hasTP ? Math.abs(origTrade.PTLevel - origTrade.OpenPrice) / origTrade.OpenPrice : 0.0;
-                  let direction = origTrade.Type === 2 ? -1 : 1;
-
+                  let exitPrice = null;
                   let slPrice = null;
                   let tpPrice = null;
-                  if (hasSL) {
-                    slPrice = direction === 1 ? entryPrice * (1 - sl_pct) : entryPrice * (1 + sl_pct);
-                  }
-                  if (hasTP) {
-                    tpPrice = direction === 1 ? entryPrice * (1 + tp_pct) : entryPrice * (1 - tp_pct);
-                  }
+                  let maxBars = 4;
+                  let hasSL = false;
+                  let hasTP = false;
 
-                  let exitPrice = null;
-                  let maxBars = holdingBars(origTrade, tfMs);
+                  if (settings.replicationMode === 'SLTP' || !settings.replicationMode) {
+                    hasSL = origTrade.SLLevel !== null && origTrade.SLLevel > 0 && origTrade.SLLevel !== -99999999 && origTrade.SLLevel !== origTrade.OpenPrice;
+                    hasTP = origTrade.PTLevel !== null && origTrade.PTLevel > 0 && origTrade.PTLevel !== -99999999 && origTrade.PTLevel !== origTrade.OpenPrice;
+                    
+                    let sl_pct = hasSL ? Math.abs(origTrade.SLLevel - origTrade.OpenPrice) / origTrade.OpenPrice : 0.0;
+                    let tp_pct = hasTP ? Math.abs(origTrade.PTLevel - origTrade.OpenPrice) / origTrade.OpenPrice : 0.0;
+                    let direction = origTrade.Type === 2 ? -1 : 1;
 
-                  let useBarLimit = !hasSL && !hasTP;
-                  let maxLoopBars = useBarLimit ? maxBars : (candles.length - t_prime);
-
-                  for (let b = 0; b < maxLoopBars; b++) {
-                    let candleIdx = (t_prime + b) % candles.length;
-                    let c = candles[candleIdx];
-
-                    if (hasFriday && isAfterFridayExit(c.time, exitHour, exitMinute)) {
-                      exitPrice = c.open;
-                      break;
+                    if (hasSL) {
+                      slPrice = direction === 1 ? entryPrice * (1 - sl_pct) : entryPrice * (1 + sl_pct);
+                    }
+                    if (hasTP) {
+                      tpPrice = direction === 1 ? entryPrice * (1 + tp_pct) : entryPrice * (1 - tp_pct);
                     }
 
-                    if (direction === 1) {
-                      if (slPrice !== null && c.low <= slPrice) {
-                        exitPrice = slPrice;
+                    maxBars = holdingBars(origTrade, tfMs);
+                    let useBarLimit = !hasSL && !hasTP;
+                    let maxLoopBars = useBarLimit ? maxBars : (candles.length - t_prime);
+
+                    for (let b = 0; b < maxLoopBars; b++) {
+                      let candleIdx = (t_prime + b) % candles.length;
+                      let c = candles[candleIdx];
+
+                      if (hasFriday && isAfterFridayExit(c.time, exitHour, exitMinute)) {
+                        exitPrice = c.open;
                         break;
                       }
-                      if (tpPrice !== null && c.high >= tpPrice) {
-                        exitPrice = tpPrice;
-                        break;
+
+                      if (direction === 1) {
+                        if (slPrice !== null && c.low <= slPrice) {
+                          exitPrice = slPrice;
+                          break;
+                        }
+                        if (tpPrice !== null && c.high >= tpPrice) {
+                          exitPrice = tpPrice;
+                          break;
+                        }
+                      } else {
+                        if (slPrice !== null && c.high >= slPrice) {
+                          exitPrice = slPrice;
+                          break;
+                        }
+                        if (tpPrice !== null && c.low <= tpPrice) {
+                          exitPrice = tpPrice;
+                          break;
+                        }
                       }
-                    } else {
-                      if (slPrice !== null && c.high >= slPrice) {
-                        exitPrice = slPrice;
-                        break;
-                      }
-                      if (tpPrice !== null && c.low <= tpPrice) {
-                        exitPrice = tpPrice;
+                    }
+
+                    if (exitPrice === null) {
+                      let exitIdx = (t_prime + maxLoopBars - 1) % candles.length;
+                      exitPrice = candles[exitIdx].close;
+                    }
+                  } else {
+                    maxBars = settings.replicationMode === 'AvgBars' ? avgHoldingBars : holdingBars(origTrade, tfMs);
+                    let maxLoopBars = Math.min(maxBars, candles.length - t_prime);
+
+                    for (let b = 0; b < maxLoopBars; b++) {
+                      let candleIdx = (t_prime + b) % candles.length;
+                      let c = candles[candleIdx];
+
+                      if (hasFriday && isAfterFridayExit(c.time, exitHour, exitMinute)) {
+                        exitPrice = c.open;
                         break;
                       }
                     }
-                  }
 
-                  if (exitPrice === null) {
-                    let exitIdx = (t_prime + maxLoopBars - 1) % candles.length;
-                    exitPrice = candles[exitIdx].close;
+                    if (exitPrice === null) {
+                      let exitIdx = (t_prime + maxLoopBars - 1) % candles.length;
+                      exitPrice = candles[exitIdx].close;
+                    }
                   }
 
                   let origCommSwap = origTrade.CommSwap || 0.0;
@@ -3032,6 +3218,16 @@
 
           if (filteredTrades.length === 0) return '';
 
+          let avgHoldingBars = 4;
+          if (settings.replicationMode === 'AvgBars' && filteredTrades.length > 0) {
+            let totalBars = 0;
+            for (let k = 0; k < filteredTrades.length; k++) {
+              totalBars += holdingBars(filteredTrades[k], tfMs);
+            }
+            avgHoldingBars = Math.round(totalBars / filteredTrades.length);
+            if (avgHoldingBars < 1) avgHoldingBars = 1;
+          }
+
           const { hasFriday, exitHour, exitMinute } = detectFridayExit(trades);
 
           // 2. Setup period indices
@@ -3154,7 +3350,7 @@
 
           // 5. Simulate each monkey and format their trades
           for (let m = 0; m < numMonkeys; m++) {
-            let shift = Math.floor(Math.random() * (M - 1)) + 1;
+            let globalShift = Math.floor(Math.random() * (M - 1)) + 1;
 
             // Reconstruct running balance starting from original balance minus first trade's profit
             let runningBalance = filteredTrades[0].Balance - filteredTrades[0].ProfitLoss;
@@ -3163,90 +3359,128 @@
               let at = alignedTrades[k];
               let origTrade = at.original;
 
+              let shift;
+              if (settings.shiftingMode === 'Random') {
+                shift = Math.floor(Math.random() * (M - 1)) + 1;
+              } else {
+                shift = globalShift;
+              }
+
               let r_prime = (at.r_i - shift) % M;
               if (r_prime < 0) r_prime += M;
               let t_prime = idxMin + r_prime;
 
               let entryPrice = candles[t_prime].open;
 
-              let hasSL = origTrade.SLLevel !== null && origTrade.SLLevel > 0 && origTrade.SLLevel !== -99999999 && origTrade.SLLevel !== origTrade.OpenPrice;
-              let hasTP = origTrade.PTLevel !== null && origTrade.PTLevel > 0 && origTrade.PTLevel !== -99999999 && origTrade.PTLevel !== origTrade.OpenPrice;
-
-              let sl_pct = hasSL ? Math.abs(origTrade.SLLevel - origTrade.OpenPrice) / origTrade.OpenPrice : 0.0;
-              let tp_pct = hasTP ? Math.abs(origTrade.PTLevel - origTrade.OpenPrice) / origTrade.OpenPrice : 0.0;
-              let direction = origTrade.Type === 2 ? -1 : 1;
-
-              let slPrice = null;
-              let tpPrice = null;
-              if (hasSL) {
-                slPrice = direction === 1 ? entryPrice * (1 - sl_pct) : entryPrice * (1 + sl_pct);
-              }
-              if (hasTP) {
-                tpPrice = direction === 1 ? entryPrice * (1 + tp_pct) : entryPrice * (1 - tp_pct);
-              }
-
               let exitPrice = null;
               let exitTime = 0;
               let closeTypeStr = 'Time exit';
-              let maxBars = holdingBars(origTrade, tfMs);
-
-              let useBarLimit = !hasSL && !hasTP;
-              let maxLoopBars = useBarLimit ? maxBars : (candles.length - t_prime);
+              let maxBars = 4;
+              let hasSL = false;
+              let hasTP = false;
+              let slPrice = null;
+              let tpPrice = null;
 
               // Track price excursion across the bars actually traversed, to compute
               // this monkey trade's own MAE/MFE (lowest low / highest high seen).
               let worstLow = entryPrice;
               let bestHigh = entryPrice;
 
-              for (let b = 0; b < maxLoopBars; b++) {
-                let candleIdx = (t_prime + b) % candles.length;
-                let c = candles[candleIdx];
+              if (settings.replicationMode === 'SLTP' || !settings.replicationMode) {
+                hasSL = origTrade.SLLevel !== null && origTrade.SLLevel > 0 && origTrade.SLLevel !== -99999999 && origTrade.SLLevel !== origTrade.OpenPrice;
+                hasTP = origTrade.PTLevel !== null && origTrade.PTLevel > 0 && origTrade.PTLevel !== -99999999 && origTrade.PTLevel !== origTrade.OpenPrice;
 
-                if (c.low < worstLow) worstLow = c.low;
-                if (c.high > bestHigh) bestHigh = c.high;
+                let sl_pct = hasSL ? Math.abs(origTrade.SLLevel - origTrade.OpenPrice) / origTrade.OpenPrice : 0.0;
+                let tp_pct = hasTP ? Math.abs(origTrade.PTLevel - origTrade.OpenPrice) / origTrade.OpenPrice : 0.0;
+                let direction = origTrade.Type === 2 ? -1 : 1;
 
-                if (hasFriday && isAfterFridayExit(c.time, exitHour, exitMinute)) {
-                  exitPrice = c.open;
-                  exitTime = c.time;
-                  closeTypeStr = 'Friday Exit';
-                  break;
+                if (hasSL) {
+                  slPrice = direction === 1 ? entryPrice * (1 - sl_pct) : entryPrice * (1 + sl_pct);
+                }
+                if (hasTP) {
+                  tpPrice = direction === 1 ? entryPrice * (1 + tp_pct) : entryPrice * (1 - tp_pct);
                 }
 
-                if (direction === 1) { // Long
-                  if (slPrice !== null && c.low <= slPrice) {
-                    exitPrice = slPrice;
+                maxBars = holdingBars(origTrade, tfMs);
+                let useBarLimit = !hasSL && !hasTP;
+                let maxLoopBars = useBarLimit ? maxBars : (candles.length - t_prime);
+
+                for (let b = 0; b < maxLoopBars; b++) {
+                  let candleIdx = (t_prime + b) % candles.length;
+                  let c = candles[candleIdx];
+
+                  if (c.low < worstLow) worstLow = c.low;
+                  if (c.high > bestHigh) bestHigh = c.high;
+
+                  if (hasFriday && isAfterFridayExit(c.time, exitHour, exitMinute)) {
+                    exitPrice = c.open;
                     exitTime = c.time;
-                    closeTypeStr = 'SL';
+                    closeTypeStr = 'Friday Exit';
                     break;
                   }
-                  if (tpPrice !== null && c.high >= tpPrice) {
-                    exitPrice = tpPrice;
-                    exitTime = c.time;
-                    closeTypeStr = 'PT';
-                    break;
+
+                  if (direction === 1) { // Long
+                    if (slPrice !== null && c.low <= slPrice) {
+                      exitPrice = slPrice;
+                      exitTime = c.time;
+                      closeTypeStr = 'SL';
+                      break;
+                    }
+                    if (tpPrice !== null && c.high >= tpPrice) {
+                      exitPrice = tpPrice;
+                      exitTime = c.time;
+                      closeTypeStr = 'PT';
+                      break;
+                    }
+                  } else { // Short
+                    if (slPrice !== null && c.high >= slPrice) {
+                      exitPrice = slPrice;
+                      exitTime = c.time;
+                      closeTypeStr = 'SL';
+                      break;
+                    }
+                    if (tpPrice !== null && c.low <= tpPrice) {
+                      exitPrice = tpPrice;
+                      exitTime = c.time;
+                      closeTypeStr = 'PT';
+                      break;
+                    }
                   }
-                } else { // Short
-                  if (slPrice !== null && c.high >= slPrice) {
-                    exitPrice = slPrice;
+                }
+
+                if (exitPrice === null) {
+                  let exitIdx = (t_prime + maxLoopBars - 1) % candles.length;
+                  exitPrice = candles[exitIdx].close;
+                  exitTime = candles[exitIdx].time;
+                  if (candles[exitIdx].low < worstLow) worstLow = candles[exitIdx].low;
+                  if (candles[exitIdx].high > bestHigh) bestHigh = candles[exitIdx].high;
+                }
+              } else {
+                maxBars = settings.replicationMode === 'AvgBars' ? avgHoldingBars : holdingBars(origTrade, tfMs);
+                let maxLoopBars = Math.min(maxBars, candles.length - t_prime);
+
+                for (let b = 0; b < maxLoopBars; b++) {
+                  let candleIdx = (t_prime + b) % candles.length;
+                  let c = candles[candleIdx];
+
+                  if (c.low < worstLow) worstLow = c.low;
+                  if (c.high > bestHigh) bestHigh = c.high;
+
+                  if (hasFriday && isAfterFridayExit(c.time, exitHour, exitMinute)) {
+                    exitPrice = c.open;
                     exitTime = c.time;
-                    closeTypeStr = 'SL';
-                    break;
-                  }
-                  if (tpPrice !== null && c.low <= tpPrice) {
-                    exitPrice = tpPrice;
-                    exitTime = c.time;
-                    closeTypeStr = 'PT';
+                    closeTypeStr = 'Friday Exit';
                     break;
                   }
                 }
-              }
 
-              if (exitPrice === null) {
-                let exitIdx = (t_prime + maxLoopBars - 1) % candles.length;
-                exitPrice = candles[exitIdx].close;
-                exitTime = candles[exitIdx].time;
-                if (candles[exitIdx].low < worstLow) worstLow = candles[exitIdx].low;
-                if (candles[exitIdx].high > bestHigh) bestHigh = candles[exitIdx].high;
+                if (exitPrice === null) {
+                  let exitIdx = (t_prime + maxLoopBars - 1) % candles.length;
+                  exitPrice = candles[exitIdx].close;
+                  exitTime = candles[exitIdx].time;
+                  if (candles[exitIdx].low < worstLow) worstLow = candles[exitIdx].low;
+                  if (candles[exitIdx].high > bestHigh) bestHigh = candles[exitIdx].high;
+                }
               }
 
               // Derive the price->money multiplier from the original trade's GROSS P/L
@@ -3698,6 +3932,21 @@
           }
         });
 
+        watch([() => settings.period, () => settings.replicationMode, () => settings.shiftingMode], () => {
+          // Clear current in-memory results to ensure consistency with selected settings
+          activeResult.value = null;
+          bulkResults.value = [];
+          inspectedStrategy.value = null;
+
+          if (activeStrategy.value) {
+            cacheStatus.value = 'loading';
+            attemptAutoLoad(activeStrategy.value.name, activeStrategy.value.trades);
+          }
+          if (bulkStrategies.value.length > 0) {
+            bulkAutoLoadCache();
+          }
+        });
+
         onMounted(() => {
           window.addEventListener('message', handleMessage);
 
@@ -3776,9 +4025,11 @@
           cacheBadgeText,
           isSavingCache,
           cacheSaveMsg,
-          tipVisible,
-          tipStyle,
-          onTipEnter,
+          tooltipText,
+          tooltipVisible,
+          tooltipStyle,
+          showTooltip,
+          hideTooltip,
           hasAnyResult,
           canSaveAny,
           saveAllCacheData

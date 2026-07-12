@@ -8,7 +8,9 @@
       "Read(//g/Software/StrategyQuantX/144/user/exports/**)",
       "Bash(ls \"g:/Software/StrategyQuantX/144/user/exports/MonkeyTest/\")",
       "Read(//g/Software/StrategyQuantX/144/user/exports/MonkeyTest/**)",
-      "PowerShell(cmd /c mklink /J \"g:\\\\Software\\\\StrategyQuantX\\\\144\\\\user\\\\extend\\\\ResultsPlugins\\\\DatabankMonkeyTest\\\\cache\" \"g:\\\\Software\\\\StrategyQuantX\\\\144\\\\user\\\\exports\\\\MonkeyTest\")"
+      "PowerShell(cmd /c mklink /J \"g:\\\\Software\\\\StrategyQuantX\\\\144\\\\user\\\\extend\\\\ResultsPlugins\\\\DatabankMonkeyTest\\\\cache\" \"g:\\\\Software\\\\StrategyQuantX\\\\144\\\\user\\\\exports\\\\MonkeyTest\")",
+      "Bash(find \"g:/Software/StrategyQuantX/144\" -path \"*/.claude/skills/*\" -name \"*.md\" 2>/dev/null | head -20)",
+      "Read(//g/Software/StrategyQuantX/144/**)"
     ]
   }
 }
