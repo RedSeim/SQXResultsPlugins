@@ -798,3 +798,34 @@ Las claves `monkeyThreshold` y `monkeyTestResult` ya existen en el objeto LOCALE
 | D5 | Resultado con `rankPercentile = 97.3` visible | Card "Monkey Test Result" muestra "97.3%" |
 | D6 | Sin resultado activo | KPI row oculta (v-if="activeResult") — sin cambio |
 | C5 | Calcular Bulk → estrategia activa entre las calculadas → sin cambiar de estrategia | Active tab muestra resultados en tiempo real conforme avanza el cálculo Bulk |
+
+---
+
+## 16. Fase 9 — Parámetros Avanzados de Simulación y Mejoras de Interfaz (Completado)
+
+Esta fase abarca la adición de controles detallados de replicación y desplazamiento circular en la simulación de los monos, el desarrollo de un sistema de tooltips reactivos inteligentes y la prevención de fallos de desbordamiento en la importación de datos.
+
+### 16.1 Desplegables de Simulación en la Barra Lateral
+Se añadieron controles visuales en la barra lateral del plugin (`index.html`), debajo del selector de periodo de evaluación:
+
+1.  **Replication Mode (`settings.replicationMode`):**
+    *   `SL & TP Distance` (`'SLTP'`): Mantiene el comportamiento tradicional replicando las distancias proporcionales de SL/TP originales.
+    *   `Fixed Average Exposure` (`'AvgBars'`): Ignora las distancias SL/TP y cierra todas las operaciones a la duración media de los trades (en barras) calculada sobre el backtest original.
+    *   `Individual Trade Exposure` (`'IndivBars'` - **DEFAULT**): Ignora las distancias SL/TP y cierra cada operación en la barra exacta correspondiente a la duración individual de la operación original.
+2.  **Shifting Mode (`settings.shiftingMode`):**
+    *   `Constant Global Shift` (`'Constant'`): Desplaza todas las operaciones de la estrategia un número de barras aleatorio idéntico en cada simulación, conservando los espacios y secuencias temporales entre ellas.
+    *   `Per-Trade Random Shift` (`'Random'` - **DEFAULT**): Desplaza cada operación de forma independiente con su propia distancia aleatoria, probando la correlación individual de las entradas.
+
+### 16.2 Refactorización de Lógica en Web Worker y CSV Exporter
+*   **Web Worker:** El generador de código del worker (`getWorkerCode()`) fue actualizado para ramificar el bucle de simulación principal según las nuevas configuraciones de desplazamiento circular y salida por tiempo/barras.
+*   **Exclusiones Matemáticas:** Se implementaron controles de protección para evitar divisiones entre cero en caso de estrategias sin operaciones o de diferencias de precios nulas (como en trades a breakeven, previniendo que `pipMult` genere anomalías).
+*   **CSV Exporter:** La lógica de generación de archivos CSV (`buildCsvString`) fue alineada simétricamente con el Web Worker para asegurar consistencia exacta entre las estadísticas de simulación del plugin y los archivos descargados.
+
+### 16.3 Sistema de Tooltips Reactivos Inteligentes
+*   **Gestión Centralizada:** Se añadió un estado global de tooltips en el setup de Vue (`tooltipText`, `tooltipVisible`, `tooltipStyle`) controlado mediante `@mouseenter` y `@mouseleave`.
+*   **Posicionamiento Dinámico (Anti-Recorte):** La posición del tooltip se calcula en tiempo real. Si el elemento interactivo se encuentra en los primeros `220px` verticales de la pantalla (cerca del borde superior del iframe o ventana), el tooltip se abre **hacia abajo** del elemento. En caso contrario, se abre **hacia arriba** (comportamiento por defecto). Esto soluciona problemas de recorte contra los menús y paneles superiores.
+*   **Ayuda para Formato de CSV de Precios (OHLC):** Se añadió un icono `ⓘ` al lado de la sección de carga de CSV Histórico con un tooltip detallado que describe las cabeceras requeridas (`DateTime,Open,High,Low,Close`), delimitadores soportados y advertencias sobre datos de precios a cero.
+
+### 16.4 Sincronización y Fallback de Traducciones
+Se actualizaron todas las claves de traducción en `en.json`, `es.json` y en la estructura estática de contingencia `LOCALES` dentro de `index.html` para asegurar el renderizado correcto incluso cuando el plugin se ejecuta de forma local vía protocolo `file://` con restricciones CORS.
+
